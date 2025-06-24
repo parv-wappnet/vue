@@ -1,30 +1,73 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
+<!-- src/App.vue -->
 <template>
   <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+    <h1>{{ title }}</h1>
+    <p>Count: {{ count }}</p>
+    <p>Double Count: {{ doubleCount }}</p>
+    <input v-model="userInput" placeholder="Type something" />
+    <p>User Input: {{ userInput }}</p>
+    <button @click="increment">Increment Count</button>
+    <button @click="changeTitle">Change Title</button>
+    <p v-if="count > 5">Count is greater than 5!</p>
+
+    <!-- Child Component -->
+    <ChildComponent />
   </div>
-  <HelloWorld msg="Vite + Vue" />
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+<script>
+import { ref, computed, watch, onMounted, onUpdated, provide, getCurrentInstance } from 'vue';
+import ChildComponent from './components/ChildComponent.vue';
+
+export default {
+  name: 'App',
+  components: { ChildComponent },
+  setup() {
+    // Reactive Data
+    const count = ref(0);
+    const userInput = ref('');
+    const title = ref('Vue 3 Instance Demo');
+
+    // Computed Property
+    const doubleCount = computed(() => count.value * 2);
+
+    // Methods
+    const increment = () => {
+      count.value++;
+    };
+    const changeTitle = () => {
+      title.value = 'Updated Title!';
+    };
+
+    // Watcher 
+    //here newvalue(a) and oldvalue(b) are predefined parameters
+    watch(count, (a, b) => {
+      console.log(`Count changed from ${b} to ${a}`);
+    });
+
+    // Lifecycle Hooks
+    onMounted(() => {
+      console.log('App component mounted!');
+
+      //access gloable plugin
+      const { proxy } = getCurrentInstance();
+      proxy.$sayHello();
+    });
+    onUpdated(() => {
+      console.log('App component updated!');
+    });
+
+    // Provide (to pass data to child components)
+    provide('appTitle', title);
+
+    return { count, userInput, title, doubleCount, increment, changeTitle };
+  },
+};
+</script>
+
+<style>
+div {
+  padding: 20px;
+  text-align: center;
 }
 </style>
