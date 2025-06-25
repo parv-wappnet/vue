@@ -1,28 +1,37 @@
-<!-- src/components/ChildComponent.vue -->
 <template>
-    <div>
-        <h2>Child Component</h2>
-        <p>App Title (via inject): {{ appTitle }}</p>
-    </div>
+  <div class="child">
+    <!-- Slots -->
+    <slot name="header"></slot>
+    <p>Count from Parent: {{ count }}</p>
+    <button @click="$emit('increment')">Increment from Child</button>
+    <!-- Scoped Slot -->
+    <slot :childData="childMessage"></slot>
+  </div>
 </template>
 
 <script>
-import { inject } from 'vue';
+import { ref } from 'vue';
 
 export default {
-    name: 'ChildComponent',
-    setup() {
-        // Inject to access provided data from parent component
-        const appTitle = inject('appTitle');
-        return { appTitle };
+  name: 'ChildComponent',
+  props: {
+    count: {
+      type: Number,
+      required: true,
+      validator: (value) => value >= 0,
     },
+  },
+  setup() {
+    const childMessage = ref('Hello from Child!');
+    return { childMessage };
+  },
 };
 </script>
 
-<style>
-div {
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin: 10px;
+<style scoped>
+.child {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px;
 }
 </style>
