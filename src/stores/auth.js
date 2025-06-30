@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
-
-const API = import.meta.env.VITE_API_BASE_URL
+import axios from '../axios' // use the configured axios instance
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -10,46 +8,46 @@ export const useAuthStore = defineStore('auth', {
   }),
   actions: {
     loginWithGoogle() {
-      window.location.href = `${API}auth/redirect/google`
+      window.location.href = 'auth/redirect/google' // baseURL will be used
     },
-    async handleGoogleCallback(queryString) {
-      const response = await axios.get(`${API}auth/callback/google${queryString}`)
-      this.user = response.data.user
-      this.token = response.data.token
-      localStorage.setItem('token', this.token)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
 
-      // 👇 Redirect based on whether password is set
-      if (!this.user.password_set) {
+    async handleGoogleCallback(queryString) {
+      const res = await axios.get(`auth/callback/google${queryString}`)
+      this.setAuth(res.data.user, res.data.token)
+
+      if (!res.data.user.password_set) {
         window.location.href = '/set-password'
       } else {
         window.location.href = '/profile'
       }
     },
+
     async login({ email, password }) {
-      const response = await axios.post(`${API}login`, { email, password })
-      this.user = response.data.user
-      this.token = response.data.token
-      localStorage.setItem('token', this.token)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+      console.log('Logging in with:', { email, password })
+      const res = await axios.post('login', { email, password })
+      this.setAuth(res.data.user, res.data.token)
     },
+
     async register({ name, email, password, password_confirmation }) {
-      const response = await axios.post(`${API}register`, {
+      const res = await axios.post('register', {
         name,
         email,
         password,
         password_confirmation
       })
-      this.user = response.data.user
-      this.token = response.data.token
-      localStorage.setItem('token', this.token)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+      this.setAuth(res.data.user, res.data.token)
     },
+
+    setAuth(user, token) {
+      this.user = user
+      this.token = token
+      localStorage.setItem('token', token)
+    },
+
     logout() {
       this.user = null
       this.token = null
       localStorage.removeItem('token')
-      delete axios.defaults.headers.common['Authorization']
     }
   }
 })
