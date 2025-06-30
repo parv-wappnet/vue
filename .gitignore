@@ -1,0 +1,52 @@
+# Node dependencies
+/node_modules
+node_modules
+
+
+# Build output
+/dist
+/.vitepress/dist
+/.output
+
+# Local environment variables
+.env
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Mac system files
+.DS_Store
+
+# Coverage
+/coverage
+
+# Optional cache folders
+/.cache
+/.nuxt
+/.next
+/.output
+/.turbo
+/.storybook
+
+# Storybook build
+/storybook-static
+
+# VS Code test snapshots
+*.snap
+
+# Lint/formatter cache
+.eslintcache
+.prettie
