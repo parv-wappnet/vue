@@ -91,7 +91,7 @@ class AuthController extends Controller
         $token = $user->createToken('api-token')->plainTextToken;
 
         // Redirect to Vue with user info & token
-        $frontendUrl = 'http://localhost:5173/login/callback';
+        $frontendUrl = 'http://localhost:5174/login/callback';
         $params = http_build_query([
             'token' => $token,
             'name' => $user->name,

@@ -47,4 +47,13 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function sentFollowRequests()
+    {
+        return $this->hasMany(FollowRequest::class, 'sender_id');
+    }
+
+    public function receivedFollowRequests()
+    {
+        return $this->hasMany(FollowRequest::class, 'receiver_id');
+    }
 }
