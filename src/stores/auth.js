@@ -3,7 +3,7 @@ import axios from '../axios' // use the configured axios instance
 const baseurl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8003/api'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: null,
+    user: JSON.parse(localStorage.getItem('user')) || null,
     token: localStorage.getItem('token') || null,
   }),
   actions: {
@@ -42,12 +42,16 @@ export const useAuthStore = defineStore('auth', {
       this.user = user
       this.token = token
       localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user))
+
     },
 
     logout() {
       this.user = null
       this.token = null
       localStorage.removeItem('token')
+      localStorage.removeItem('user')
+
     }
   }
 })

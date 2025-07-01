@@ -14,12 +14,13 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 import axios from '../axios'
-import { echo } from '../services/echo'
+import { createEcho } from '../services/echo'
 import { useAuthStore } from '../stores/auth'
 const authStore = useAuthStore()
 const requests = ref([])
+const echo = createEcho(authStore.token)
 
-// Load pending follow requests
+// Load pending follow requests 
 const load = async () => {
     try {
         const res = await axios.get('/follow/pending')
@@ -55,14 +56,40 @@ watch(
     { immediate: true }
 )
 
+// onMounted(() => {
+//     load()
+//     console.log("user", authStore.user.id)
+//     echo.private(`user.${authStore.user?.id}`)
+//         .listen('.follow-request', (e) => {
+//             console.log('🔔 Private follow request from:', e.sender)
+//             load()
+//         })
+
+// })
+
 onMounted(() => {
     load()
-    echo.channel('follow')
-        .listen('.follow-request', (e) => {
-            console.log('📩 New follow request from:', e.sender)
-            load() // refresh list
-        })
+
+    console.log('[Vue] On mounted - authStore.user:', authStore.user)
+    console.log('[Vue] On mounted - authStore.token:', authStore.token)
+
+    if (authStore.user?.id) {
+        console.log(`[Vue] Subscribing to private channel: user.${authStore.user.id}`)
+
+        echo.private(`user.${authStore.user.id}`)
+            .listen('.follow-request', (e) => {
+                console.log('🔔 [Echo] Private follow request received from:', e.sender)
+                console.log('✅ [Echo] Successfully connected to private channel')
+                load()
+            })
+            .error((error) => {
+                console.error('❌ [Echo] Connection failed:', error)
+            })
+    } else {
+        console.warn('[Vue] No user ID found, skipping Echo subscription.')
+    }
 })
+
 </script>
 
 
