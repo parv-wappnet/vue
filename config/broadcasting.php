@@ -4,6 +4,8 @@ return [
 
     'default' => env('BROADCAST_DRIVER', 'null'),
 
+    'guards' => ['sanctum'],
+
     'connections' => [
 
         'pusher' => [

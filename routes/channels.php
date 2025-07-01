@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('user.{id}', function ($user, $id) {
+Broadcast::channel('follow', function ($user, $id) {
     dd($user, $id);
     return (int) $user->id === (int) $id;
 });
