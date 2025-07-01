@@ -13,82 +13,55 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue'
-import Echo from 'laravel-echo'
-import Pusher from 'pusher-js'
 import axios from '../axios'
+import { echo } from '../services/echo'
 import { useAuthStore } from '../stores/auth'
-
-Pusher.logToConsole = true // Enable debug logs
-
 const authStore = useAuthStore()
 const requests = ref([])
 
-// Initialize Echo with Pusher
-const echo = new Echo({
-  broadcaster: 'pusher',
-  key: 'bec6814461fa57783faf',
-  cluster: 'ap2',
-  forceTLS: true,
-  disableStats: true, // optional: now deprecated in favor of enableStats = false
-  authEndpoint: '/broadcasting/auth',
-  auth: {
-    headers: {
-      Authorization: `Bearer ${authStore.token}`,
-    },
-  },
-})
-
-// Listen for Pusher connection lifecycle events
-echo.connector.pusher.connection.bind('connected', () => {
-  console.log('✅ Connected to Pusher successfully')
-})
-
-echo.connector.pusher.connection.bind('error', (err) => {
-  console.error('❌ Pusher connection error:', err)
-})
-
-echo.connector.pusher.connection.bind('state_change', (states) => {
-  console.log('🔄 Pusher state changed:', states)
-})
-
 // Load pending follow requests
 const load = async () => {
-  try {
-    const res = await axios.get('/follow/pending')
-    requests.value = res.data
-  } catch (err) {
-    console.error('❌ Error loading follow requests:', err)
-  }
+    try {
+        const res = await axios.get('/follow/pending')
+        requests.value = res.data
+    } catch (err) {
+        console.error('❌ Error loading follow requests:', err)
+    }
 }
 
 // Accept or reject a follow request
 const respond = async (id, status) => {
-  try {
-    await axios.post('/follow/respond', { request_id: id, status })
-    await load()
-  } catch (err) {
-    console.error('❌ Error updating request:', err)
-  }
+    try {
+        await axios.post('/follow/respond', { request_id: id, status })
+        await load()
+    } catch (err) {
+        console.error('❌ Error updating request:', err)
+    }
 }
 
 // Subscribe to private channel once user is available
 watch(
-  () => authStore.user,
-  (user) => {
-    if (user?.id) {
-      const channel = echo.private(`follow`)
+    () => authStore.user,
+    (user) => {
+        if (user?.id) {
+            // const channel = echo.private(`follow`)
 
-      channel.listen('.follow.request', (e) => {
-        console.log('📩 New follow request from:', e.sender)
-        load()
-      })
-    }
-  },
-  { immediate: true }
+            // channel.listen('.follow.request', (e) => {
+            //     console.log('📩 New follow request from:', e.sender)
+            //     load()
+            // })
+        }
+    },
+    { immediate: true }
 )
 
 onMounted(() => {
-  load()
+    load()
+    echo.channel('follow')
+        .listen('.follow-request', (e) => {
+            console.log('📩 New follow request from:', e.sender)
+            load() // refresh list
+        })
 })
 </script>
 
