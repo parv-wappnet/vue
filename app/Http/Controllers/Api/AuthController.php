@@ -51,7 +51,7 @@ class AuthController extends Controller
 
     public function setPassword(Request $request)
     {
-        \Log::info('Set password endpoint hit');
+        // \Log::info('Set password endpoint hit');
 
         $request->validate([
             'password' => 'required|min:6',
@@ -77,7 +77,7 @@ class AuthController extends Controller
             \Log::error('Google authentication error: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to authenticate with Google'], 401);
         }
-        \Log::info('googleUser', ['user' => $googleUser]);
+        // \Log::info('googleUser', ['user' => $googleUser]);
         $user = User::updateOrCreate(
             ['email' => $googleUser->getEmail()],
             [
