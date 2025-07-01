@@ -4,6 +4,8 @@ return [
 
     'default' => env('BROADCAST_DRIVER', 'null'),
 
+    // Middleware configuration for broadcast routes
+    // Use with Broadcast::routes(['middleware' => ['auth:sanctum']]) in routes/api.php or broadcasting.php
     'guards' => ['sanctum'],
 
     'connections' => [
