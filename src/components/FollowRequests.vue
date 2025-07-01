@@ -12,7 +12,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref } from 'vue'
 import axios from '../axios'
 import { echo } from '../services/echo'
 import { useAuthStore } from '../stores/auth'
@@ -39,28 +39,11 @@ const respond = async (id, status) => {
     }
 }
 
-// Subscribe to private channel once user is available
-watch(
-    () => authStore.user,
-    (user) => {
-        if (user?.id) {
-            // const channel = echo.private(`follow`)
-
-            // channel.listen('.follow.request', (e) => {
-            //     console.log('📩 New follow request from:', e.sender)
-            //     load()
-            // })
-        }
-    },
-    { immediate: true }
-)
-
 onMounted(() => {
     load()
     echo.channel('follow')
-        .listen('.follow-request', (e) => {
-            console.log('📩 New follow request from:', e.sender)
-            load() // refresh list
+        .listen('.follow-request', () => {
+            load()
         })
 })
 </script>

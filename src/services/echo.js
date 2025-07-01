@@ -2,7 +2,10 @@
 import Echo from 'laravel-echo'
 import Pusher from 'pusher-js'
 
-Pusher.logToConsole = true
+// This enables Pusher's debug logging to browser console
+// Useful during development to see Pusher connection details and events
+// Should be set to false in production
+Pusher.logToConsole = false
 
 export const echo = new Echo({
     broadcaster: 'pusher',
