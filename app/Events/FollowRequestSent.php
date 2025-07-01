@@ -25,11 +25,13 @@ class FollowRequestSent implements ShouldBroadcast
     public function broadcastOn(): array
     {
         // return [new PrivateChannel("user.{$this->receiverId}")];
-        return [new PrivateChannel("follow")];
+        \Log::info('🔊 Broadcasting follow request from: ' . $this->sender->id . ' to: ' . $this->receiverId);
+
+        return ["follow"];
     }
 
     public function broadcastAs(): string
     {
-        return 'follow.request';
+        return 'follow-request';
     }
 }

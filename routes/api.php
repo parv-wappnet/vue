@@ -7,9 +7,9 @@ use Illuminate\Http\Client\Request;
 
 use Illuminate\Support\Facades\Route; // ✅ This is REQUIRED
 
-use Illuminate\Support\Facades\Broadcast;
+// use Illuminate\Support\Facades\Broadcast;    
 
-Broadcast::routes(['middleware' => ['auth:sanctum']]);
+// Broadcast::routes(['middleware' => ['auth:sanctum']]);
 Route::get('/auth/redirect/google', [AuthController::class, 'redirectToGoogle']);
 Route::get('/auth/callback/google', [AuthController::class, 'handleGoogleCallback']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -32,4 +32,8 @@ Route::middleware('auth:sanctum')->prefix('follow')->group(function () {
 Route::get('/ping', function () {
     \Log::info('Ping endpoint hit');
     return response()->json(['message' => 'pong']);
+});
+
+Route::middleware('auth:sanctum')->get('/test-auth', function () {
+    return response()->json(['ok' => true]);
 });

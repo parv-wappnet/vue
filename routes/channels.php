@@ -13,7 +13,9 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('follow', function ($user, $id) {
-    dd($user, $id);
-    return (int) $user->id === (int) $id;
-});
+// Broadcast::channel('follow', function ($user) {
+//     // dd($user, $id);
+//     // return (int) $user->id === (int) $id;
+//     \Log::info('Follow channel accessed by user:', ['user_id' => $user->id]);
+//     return true;
+// });

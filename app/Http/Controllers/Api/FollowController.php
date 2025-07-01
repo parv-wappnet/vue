@@ -27,6 +27,7 @@ class FollowController extends Controller
             'receiver_id' => $data['receiver_id'],
         ]);
         // Dispatch follow request event
+        \Log::info("broadcasting follow request from user ID: {$request->user()->id} to receiver ID: {$data['receiver_id']}");
         event(new FollowRequestSent($request->user(), $data['receiver_id']));
         // broadcast(new FollowRequestSent($request->user(), $data['receiver_id']))->toOthers();
 
