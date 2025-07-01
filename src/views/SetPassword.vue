@@ -20,7 +20,7 @@ const password = ref('')
 
 async function submit() {
   try {
-    await axios.post(`${import.meta.env.VITE_API_BASE_URL}user/set-password`, {
+    await axios.post('user/set-password', {
       password: password.value,
     }, {
       headers: { Authorization: `Bearer ${auth.token}` }

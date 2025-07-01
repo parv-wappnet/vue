@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from '../axios' // use the configured axios instance
-
+const baseurl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8003/api'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
@@ -8,7 +8,7 @@ export const useAuthStore = defineStore('auth', {
   }),
   actions: {
     loginWithGoogle() {
-      window.location.href = 'auth/redirect/google' // baseURL will be used
+      window.location.href = `${baseurl}/auth/redirect/google` // baseURL will be used
     },
 
     async handleGoogleCallback(queryString) {
