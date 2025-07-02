@@ -5,11 +5,13 @@ namespace App\Events;
 use App\Models\Message;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\ShouldBroadcast;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+// use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+// used for broadcasting events immediately without delay can work without queueing
 use Illuminate\Queue\SerializesModels;
 
-class MessageSent implements ShouldBroadcastNow
+class MessageSent implements ShouldBroadcast
 {
     use InteractsWithSockets, SerializesModels;
 
@@ -23,16 +25,21 @@ class MessageSent implements ShouldBroadcastNow
     public function broadcastOn(): Channel
     {
         // return new Channel('chat.' . $this->message->conversation_id);
-        return new Channel('chat');
+        // return new Channel('chat');
+        return new PrivateChannel('chat.' . $this->message->conversation_id);
     }
-
+    public function broadcastAs()
+    {
+        return 'MessageSent';
+    }
     public function broadcastWith(): array
     {
         return [
             'id' => $this->message->id,
-            'body' => $this->message->body,
+            'content' => $this->message->content,
             'sender_id' => $this->message->sender_id,
             'conversation_id' => $this->message->conversation_id,
+            'type' => $this->message->type,
             'created_at' => $this->message->created_at->toDateTimeString(),
             'sender' => [
                 'id' => $this->message->sender->id,

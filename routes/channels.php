@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Conversation;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
 
 /*
@@ -13,9 +15,33 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-// Broadcast::channel('follow', function ($user) {
-//     // dd($user, $id);
-//     // return (int) $user->id === (int) $id;
-//     \Log::info('Follow channel accessed by user:', ['user_id' => $user->id]);
-//     return true;
-// });
+Broadcast::channel('chat.{conversationId}', function ($user, $conversationId) {
+    \Log::info('User ID: ' . $user->id . ', Conversation ID: ' . $conversationId);
+    $conversation = Conversation::find($conversationId);
+    if (!$conversation) {
+        \Log::warning('Conversation not found: ' . $conversationId);
+        return false; // Conversation does not exist
+    }
+    if ($conversation->type === 'private') {
+        // For private conversations, check if the user is the creator or receiver
+        if ($conversation->created_by === $user->id || $conversation->receiver_id === $user->id) {
+            \Log::info('User is authorized for private conversation: ' . $conversationId);
+            return true; // User is authorized for private conversation
+        } else {
+            \Log::warning('User is not authorized for private conversation: ' . $conversationId);
+            return false; // User is not authorized for private conversation
+        }
+    }
+    // } elseif ($conversation->type === 'group') {
+    //     // For group conversations, check if the user is a participant
+    //     if ($conversation->participants()->where('user_id', $user->id)->exists()) {
+    //         \Log::info('User is authorized for group conversation: ' . $conversationId);
+    //         return true; // User is authorized for group conversation
+    //     } else {
+    //         \Log::warning('User is not authorized for group conversation: ' . $conversationId);
+    //         return false; // User is not authorized for group conversation
+    //     }
+    // }
+    \Log::warning('Conversation type not recognized: ' . $conversation->type);
+    return false; // Conversation type not recognized
+});

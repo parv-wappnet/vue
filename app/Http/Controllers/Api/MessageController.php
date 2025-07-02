@@ -24,7 +24,7 @@ class MessageController extends Controller
 
         // $messages = $conversation->messages()->with('sender')->orderBy('created_at')->get();
         $messages = $conversation->messages()->get();
-        \Log::info('message' . json_encode($messages));
+        // \Log::info('message' . json_encode($messages));
         // return;
         return response()->json($messages);
     }

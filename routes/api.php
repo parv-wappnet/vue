@@ -6,12 +6,17 @@ use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\GroupController;
 use App\Http\Controllers\Api\MessageController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
 Route::get('/ping', function () {
     \Log::info('Ping endpoint hit at ' . now()->toDateTimeString());
     return response()->json(['message' => 'pong']);
+});
+Route::post('/ping', function () {
+    \Log::info('Ping endpoint hit at ' . now()->toDateTimeString());
+    return Auth::check();
 });
 
 // Auth Routes

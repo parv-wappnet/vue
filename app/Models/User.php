@@ -56,4 +56,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(FollowRequest::class, 'receiver_id');
     }
+
+    // public function conversations()
+    // {
+    //     return $this->belongsToMany(Conversation::class, 'conversation_user', 'user_id', 'conversation_id')
+    //         ->withTimestamps();
+    // }
 }
