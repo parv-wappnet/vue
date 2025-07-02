@@ -21,7 +21,11 @@ class FollowRequestSent implements ShouldBroadcast
         $this->sender = $sender;
         $this->receiverId = $receiverId;
     }
+    // broadcastOn() — Defines the channel the event will be broadcasted on.
 
+    // broadcastAs() — Customizes the event name for frontend listeners.
+
+    // broadcastWith() — Customizes the data payload sent to the frontend
     public function broadcastOn(): array
     {
         // return [new PrivateChannel("user.{$this->receiverId}")];

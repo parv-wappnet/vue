@@ -2,84 +2,45 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Conversation extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<string>
-     */
     protected $fillable = [
         'name',
-        'type', // 'private', 'group'
+        'type',
         'description',
         'created_by',
+        'receiver_id',
+        'group_id',
         'is_active',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'is_active' => 'boolean',
-    ];
-
-    /**
-     * Get the users that belong to this conversation.
-     */
-    public function users(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'conversation_user')
-            ->withPivot('role', 'joined_at')
-            ->withTimestamps();
-    }
-
-    /**
-     * Get the messages in this conversation.
-     */
-    public function messages(): HasMany
-    {
-        return $this->hasMany(Message::class);
-    }
-
-    /**
-     * Get the creator of this conversation.
-     */
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    /**
-     * Get the latest message in this conversation.
-     */
-    public function latestMessage()
+    public function receiver()
     {
-        return $this->hasOne(Message::class)->latestOfMany();
+        return $this->belongsTo(User::class, 'receiver_id');
     }
 
-    /**
-     * Check if this is a private conversation.
-     */
-    public function isPrivate(): bool
+    public function group()
     {
-        return $this->type === 'private';
+        return $this->belongsTo(Group::class);
     }
 
-    /**
-     * Check if this is a group conversation.
-     */
-    public function isGroup(): bool
+    public function messages()
     {
-        return $this->type === 'group';
+        return $this->hasMany(Message::class);
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'conversation_user');
     }
 }
