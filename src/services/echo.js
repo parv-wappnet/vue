@@ -11,5 +11,10 @@ export const echo = new Echo({
     broadcaster: 'pusher',
     key: 'bec6814461fa57783faf',
     cluster: 'ap2',
-    forceTLS: true,
+    forceTLS: true, authEndpoint: 'http://localhost:8003/broadcasting/auth',
+    auth: {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+        },
+    },
 })

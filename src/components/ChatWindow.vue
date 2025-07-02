@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, onBeforeUnmount } from 'vue'
 import axios from '../axios'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
@@ -37,12 +37,22 @@ const conversationId = ref(null)
 const initConversation = async () => {
     try {
         const res = await axios.get(`/conversations/private/${userId.value}`)
-        conversationId.value = res.data.conversation_id
+        const id = res.data.conversation_id // 👈 assign here first
+        conversationId.value = id
         await loadMessages()
+
+        console.log("✅ Subscribing to chat channel:", `chat.${id}`)
+        echo.private(`chat.${id}`)
+            .listen('.MessageSent', (e) => {
+                console.log('📩 New message received:', e)
+                messages.value.unshift(e) // Add new message to the beginning
+                console.log("message after new arrival", messages.value)
+            })
     } catch (err) {
         console.error('❌ Failed to get or create conversation:', err)
     }
 }
+
 
 // Step 2: Load messages for that conversation
 const loadMessages = async () => {
@@ -50,6 +60,7 @@ const loadMessages = async () => {
     try {
         const res = await axios.get(`/conversations/${conversationId.value}/messages`)
         messages.value = res.data.reverse()
+        console.log('📜 Messages loaded:', messages.value)
         conversationName.value = res.data[0]?.conversation?.name || 'Private Chat'
     } catch (e) {
         console.error('❌ Failed to load messages:', e)
@@ -76,13 +87,10 @@ const formatDate = (date) =>
 
 onMounted(() => {
     initConversation()
-    console.log(conversationId.value)
-    echo.channel(`chat`)
-        .listen('MessageSent', (e) => {
-            initConversation()
-            console.log('New message received:', e)
-            // messages.value.push(e)
-        })
+})
+
+onBeforeUnmount(() => {
+    echo.leave(`chat.${conversationId}`)
 })
 </script>
 
