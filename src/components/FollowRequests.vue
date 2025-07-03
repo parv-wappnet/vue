@@ -1,25 +1,47 @@
 <template>
-    <div>
-        <h3>Follow Requests</h3>
-        <div v-if="requests.length === 0">No pending requests.</div>
+    <div class="max-w-2xl mx-auto p-6 bg-gradient-to-br from-blue-50 to-purple-100 shadow-lg rounded-xl">
+        <h3 class="text-3xl font-bold mb-6 text-purple-700 text-center"> New Follow Requests</h3>
 
-        <div v-for="req in requests" :key="req.id" class="request-box">
-            <p><strong>{{ req.sender.name }}</strong> ({{ req.sender.email }}) wants to connect</p>
-            <button @click="respond(req.id, 'accepted')">✅ Accept</button>
-            <button @click="respond(req.id, 'rejected')">❌ Reject</button>
+        <div v-if="requests.length === 0" class="text-center text-lg text-gray-600">
+            No new follow requests. 🎈
         </div>
+
+        <ul v-else class="space-y-4">
+            <li v-for="req in requests" :key="req.id"
+                class="flex justify-between items-center p-4 bg-white border-2 border-purple-200 rounded-xl shadow-md hover:shadow-xl transition-all">
+                <div class="flex items-center space-x-3">
+                    <div>
+                        <p class="text-purple-700 font-semibold text-lg">{{ req.sender.name }}</p>
+                        <p class="text-sm text-gray-500">{{ req.sender.email }}</p>
+                    </div>
+                </div>
+
+                <div class="flex space-x-2">
+                    <button @click="respond(req.id, 'accepted')"
+                        class="px-4 py-2 text-sm font-semibold text-white bg-green-500 rounded-lg hover:bg-green-600 transition">
+                        ✅ Accept
+                    </button>
+                    <button @click="respond(req.id, 'rejected')"
+                        class="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 transition">
+                        ❌ Reject
+                    </button>
+                </div>
+            </li>
+        </ul>
     </div>
 </template>
 
+
 <script setup>
-import { onMounted, ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import axios from '../axios'
 import { echo } from '../services/echo'
 import { useAuthStore } from '../stores/auth'
+
 const authStore = useAuthStore()
 const requests = ref([])
 
-// Load pending follow requests
+// Fetch pending follow requests
 const load = async () => {
     try {
         const res = await axios.get('/follow/pending')
@@ -29,36 +51,35 @@ const load = async () => {
     }
 }
 
-// Accept or reject a follow request
+// Accept or reject request
 const respond = async (id, status) => {
     try {
         await axios.post('/follow/respond', { request_id: id, status })
         await load()
     } catch (err) {
-        console.error('❌ Error updating request:', err)
+        console.error('❌ Error responding to request:', err)
     }
 }
 
 onMounted(() => {
     load()
-    echo.channel('follow')
-        .listen('.follow-request', () => {
+
+    // Subscribe to private user channel
+    const userId = authStore.user?.id
+    if (!userId) return
+
+    console.log(`✅ Subscribed to: private-user.${userId}`)
+    echo.private(`user.${userId}`)
+        .listen('.follow-request', (e) => {
+            console.log('🔔 New follow request received:', e)
             load()
         })
 })
+
+onBeforeUnmount(() => {
+    const userId = authStore.user?.id
+    if (userId) {
+        echo.leave(`private-user.${userId}`)
+    }
+})
 </script>
-
-
-
-<style scoped>
-.request-box {
-    margin-bottom: 1rem;
-    padding: 0.75rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-}
-
-button {
-    margin-right: 0.5rem;
-}
-</style>

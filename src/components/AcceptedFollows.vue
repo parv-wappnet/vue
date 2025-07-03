@@ -13,12 +13,16 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, onBeforeUnmount } from 'vue'
 import axios from '../axios'
 import { useRouter } from 'vue-router'
+import { echo } from '../services/echo'
+import { useAuthStore } from '../stores/auth'
 
 const accepted = ref([])
 const router = useRouter()
+const authStore = useAuthStore()
+
 
 const loadAccepted = async () => {
     try {
@@ -33,7 +37,24 @@ const openChat = (userId) => {
     router.push({ name: 'ChatWindow', params: { userId } })
 }
 
-onMounted(loadAccepted)
+
+onMounted(() => {
+    loadAccepted()
+    const userId = authStore.user?.id
+    if (!userId) return
+    echo.private(`user.${userId}`)
+        .listen('.follow-accepted', () => {
+            console.log('📡 Realtime accepted connection received')
+            loadAccepted()
+        })
+})
+
+onBeforeUnmount(() => {
+    const userId = authStore.user?.id
+    if (userId) {
+        echo.leave(`private-user.${userId}`)
+    }
+})
 </script>
 
 <style scoped>
