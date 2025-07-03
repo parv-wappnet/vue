@@ -28,14 +28,22 @@ class FollowRequestSent implements ShouldBroadcast
     // broadcastWith() — Customizes the data payload sent to the frontend
     public function broadcastOn(): array
     {
-        // return [new PrivateChannel("user.{$this->receiverId}")];
-        // \Log::info('🔊 Broadcasting follow request from: ' . $this->sender->id . ' to: ' . $this->receiverId);
-
-        return ["follow"];
+        return [new PrivateChannel("user.{$this->receiverId}")];
     }
 
     public function broadcastAs(): string
     {
         return 'follow-request';
+    }
+
+    public function broadcastWith(): array
+    {
+        return [
+            'sender' => [
+                'id' => $this->sender->id,
+                'name' => $this->sender->name,
+                'email' => $this->sender->email,
+            ]
+        ];
     }
 }

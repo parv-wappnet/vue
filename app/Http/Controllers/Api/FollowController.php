@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\FollowRequestAccepted;
 use App\Http\Controllers\Controller;
 use App\Models\FollowRequest;
 use App\Models\User;
@@ -47,6 +48,9 @@ class FollowController extends Controller
         }
 
         $follow->update(['status' => $data['status']]);
+        if ($request->status === 'accepted') {
+            event(new FollowRequestAccepted($follow->sender, $follow->receiver));
+        }
         return response()->json(['message' => 'Response recorded']);
     }
 

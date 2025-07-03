@@ -45,3 +45,13 @@ Broadcast::channel('chat.{conversationId}', function ($user, $conversationId) {
     \Log::warning('Conversation type not recognized: ' . $conversation->type);
     return false; // Conversation type not recognized
 });
+
+Broadcast::channel('user.{id}', function ($user, $id) {
+    \Log::info('User ID: ' . $user->id . ', Channel ID: ' . $id);
+    return (int) $user->id === (int) $id;
+});
+
+
+Broadcast::channel('user.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+});
