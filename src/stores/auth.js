@@ -1,55 +1,91 @@
-import { defineStore } from 'pinia'
-import axios from 'axios'
+// File: stores/auth.js
+// Purpose: Manages authentication state and operations using Pinia store, including user login, registration, and Google OAuth
 
-const API = import.meta.env.VITE_API_BASE_URL
+import { defineStore } from 'pinia'
+import axios from '@services/axios'
+
+const baseurl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8003/api'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
-    token: localStorage.getItem('token') || null,
+    token: null,
   }),
-  actions: {
-    loginWithGoogle() {
-      window.location.href = `${API}auth/redirect/google`
-    },
-    async handleGoogleCallback(queryString) {
-      const response = await axios.get(`${API}auth/callback/google${queryString}`)
-      this.user = response.data.user
-      this.token = response.data.token
-      localStorage.setItem('token', this.token)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
 
-      // 👇 Redirect based on whether password is set
-      if (!this.user.password_set) {
-        window.location.href = '/set-password'
-      } else {
-        window.location.href = '/profile'
-      }
+  persist: {
+    storage: localStorage, // Optional: defaults to localStorage
+  },
+
+  actions: {
+    /**
+     * Initiates Google OAuth login flow by redirecting to Google auth URL
+     * Arguments: None
+     * Returns: void
+     * Purpose: Redirects user to Google login page to start OAuth process
+     */
+    loginWithGoogle() {
+      window.location.href = `${baseurl}auth/redirect/google`
     },
+
+    /**
+     * Handles regular email/password login
+     * Arguments: {email: string, password: string}
+     * Returns: Promise<void>
+     * Purpose: Authenticates user with email/password and sets auth state
+     */
     async login({ email, password }) {
-      const response = await axios.post(`${API}login`, { email, password })
-      this.user = response.data.user
-      this.token = response.data.token
-      localStorage.setItem('token', this.token)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+      const res = await axios.post('login', { email, password })
+      this.setAuth(res.data.user, res.data.token)
     },
+
+
+
+    /**Sets a new password for the authenticated user
+     * Arguments: password - New password string
+     * Returns: Promise<void>
+     * Purpose: Updates user's password in the backend
+     */
+    async setPassword(password) {
+      const res = await axios.post('user/set-password', { password:password })
+      this.setAuth(res.data.user, res.data.token)
+    },
+
+    /**
+     * Registers a new user
+     * Arguments: {name: string, email: string, password: string, password_confirmation: string}
+     * Returns: Promise<void>
+     * Purpose: Creates new user account and sets auth state
+     */
     async register({ name, email, password, password_confirmation }) {
-      const response = await axios.post(`${API}register`, {
+      const res = await axios.post('register', {
         name,
         email,
         password,
-        password_confirmation
+        password_confirmation,
       })
-      this.user = response.data.user
-      this.token = response.data.token
-      localStorage.setItem('token', this.token)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+      this.setAuth(res.data.user, res.data.token)
     },
+
+    /**
+     * Sets authentication state
+     * Arguments: user - User object, token - Authentication token string
+     * Returns: void
+     * Purpose: Updates store with user data and authentication token
+     */
+    setAuth(user, token) {
+      this.user = user
+      this.token = token
+    },
+
+    /**
+     * Logs out current user
+     * Arguments: None
+     * Returns: void
+     * Purpose: Clears authentication state
+     */
     logout() {
       this.user = null
       this.token = null
-      localStorage.removeItem('token')
-      delete axios.defaults.headers.common['Authorization']
-    }
-  }
+    },
+  },
 })
