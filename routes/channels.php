@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Broadcast;
 */
 
 Broadcast::channel('chat.{conversationId}', function ($user, $conversationId) {
-    \Log::info('User ID: ' . $user->id . ', Conversation ID: ' . $conversationId);
     $conversation = Conversation::find($conversationId);
     if (!$conversation) {
         \Log::warning('Conversation not found: ' . $conversationId);
@@ -25,7 +24,6 @@ Broadcast::channel('chat.{conversationId}', function ($user, $conversationId) {
     if ($conversation->type === 'private') {
         // For private conversations, check if the user is the creator or receiver
         if ($conversation->created_by === $user->id || $conversation->receiver_id === $user->id) {
-            \Log::info('User is authorized for private conversation: ' . $conversationId);
             return true; // User is authorized for private conversation
         } else {
             \Log::warning('User is not authorized for private conversation: ' . $conversationId);
@@ -47,7 +45,6 @@ Broadcast::channel('chat.{conversationId}', function ($user, $conversationId) {
 });
 
 Broadcast::channel('user.{id}', function ($user, $id) {
-    \Log::info('User ID: ' . $user->id . ', Channel ID: ' . $id);
     return (int) $user->id === (int) $id;
 });
 

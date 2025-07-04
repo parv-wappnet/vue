@@ -14,14 +14,11 @@ Route::get('/ping', function () {
     \Log::info('Ping endpoint hit at ' . now()->toDateTimeString());
     return response()->json(['message' => 'pong']);
 });
-Route::post('/ping', function () {
-    \Log::info('Ping endpoint hit at ' . now()->toDateTimeString());
-    return Auth::check();
-});
 
 // Auth Routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+
 
 // Google OAuth Routes
 Route::prefix('auth')->group(function () {
@@ -45,17 +42,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/pending', [FollowController::class, 'pendingRequests']);
         Route::get('/accepted', [FollowController::class, 'accepted']);
     });
-
-    // Conversation Routes
-    // Route::prefix('conversations')->group(function () {
-    //     Route::get('/', [ConversationController::class, 'index']);
-    //     Route::post('/', [ConversationController::class, 'store']);
-    //     Route::get('/{conversation}', [ConversationController::class, 'show']);
-    //     Route::put('/{conversation}', [ConversationController::class, 'update']);
-    //     Route::delete('/{conversation}', [ConversationController::class, 'destroy']);
-    //     Route::get('/available-users', [ConversationController::class, 'availableUsers']);
-    // });
-
 
     // Message Routes
     Route::get('conversations/{id}/messages', [MessageController::class, 'index']);

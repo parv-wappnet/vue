@@ -72,6 +72,10 @@
             "@php artisan view:cache --ansi",
             "@php artisan cache:clear --ansi",
             "@php artisan event:clear --ansi"
+        ],
+        "chat": [
+            "Composer\\Config::disableProcessTimeout",
+            "npx concurrently -c \"#93c5fd,#c4b5fd\" \"php artisan serve --port=8003\" \"php artisan queue:listen\" --names=server,queue"
         ]
     },
     "extra": {

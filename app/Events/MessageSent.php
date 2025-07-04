@@ -42,6 +42,7 @@ class MessageSent implements ShouldBroadcast
             'sender' => [
                 'id' => $this->message->sender->id,
                 'name' => $this->message->sender->name,
+                'email' => $this->message->sender->email,
             ],
         ];
     }

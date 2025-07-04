@@ -51,8 +51,6 @@ class AuthController extends Controller
 
     public function setPassword(Request $request)
     {
-        // \Log::info('Set password endpoint hit');
-
         $request->validate([
             'password' => 'required|min:6',
         ]);
@@ -60,8 +58,11 @@ class AuthController extends Controller
         $user = $request->user();
         $user->password = bcrypt($request->password);
         $user->save();
-
-        return response()->json(['message' => 'Password set successfully']);
+        $token = $user->createToken('api-token')->plainTextToken;
+        return response()->json([
+            'user' => $user,
+            'token' => $token
+        ]);
     }
 
     public function redirectToGoogle()
@@ -84,7 +85,6 @@ class AuthController extends Controller
                 'name' => $googleUser->getName(),
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
-                // 'password' => "demo",
             ]
         );
 
@@ -97,9 +97,9 @@ class AuthController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'avatar' => $user->avatar,
-            // 'password_set' => $user->password !== null && $user->password !== 'demo',
+            'id' => $user->id,
+            'password_set' => !empty($user->password)
         ]);
-
         return redirect("{$frontendUrl}?{$params}");
     }
 }
