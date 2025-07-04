@@ -12,7 +12,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import axios from '../axios' // 🧠 your configured axios with baseURL & token
+import axios from '@services/axios' // 🧠 your configured axios with baseURL & token
 
 const email = ref('')
 const user = ref(null)

@@ -34,11 +34,12 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import axios from '../axios'
-import { echo } from '../services/echo'
-import { useAuthStore } from '../stores/auth'
+import axios from '@services/axios'
+import { createEcho } from '@services/echo'
+import { useAuthStore } from '@stores/auth'
 
-const authStore = useAuthStore()
+const auth = useAuthStore()
+const echo = createEcho(auth.token)
 const requests = ref([])
 
 // Fetch pending follow requests
@@ -65,7 +66,7 @@ onMounted(() => {
     load()
 
     // Subscribe to private user channel
-    const userId = authStore.user?.id
+    const userId = auth.user?.id
     if (!userId) return
 
     console.log(`✅ Subscribed to: private-user.${userId}`)
@@ -77,7 +78,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-    const userId = authStore.user?.id
+    const userId = auth.user?.id
     if (userId) {
         echo.leave(`private-user.${userId}`)
     }

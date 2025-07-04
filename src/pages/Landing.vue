@@ -2,7 +2,7 @@
   <div class="landing">
     <nav>
       <router-link to="/">About Us</router-link>
-      <button @click="auth.loginWithGoogle()">Signup with Google</button>
+      <router-link to="/signup">Signup</router-link>
       <router-link to="/login">Login</router-link>
     </nav>
 
@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-import { useAuthStore } from '../stores/auth'
+import { useAuthStore } from '@stores/auth'
 const auth = useAuthStore()
 </script>
 
@@ -25,9 +25,12 @@ nav {
   padding: 1rem;
   background: #f0f0f0;
 }
-nav a, nav button {
+
+nav a,
+nav button {
   margin: 0 1rem;
 }
+
 .hero {
   text-align: center;
   margin-top: 3rem;

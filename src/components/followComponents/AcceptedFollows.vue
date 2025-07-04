@@ -14,14 +14,15 @@
 
 <script setup>
 import { onMounted, ref, onBeforeUnmount } from 'vue'
-import axios from '../axios'
+import axios from '@services/axios'
 import { useRouter } from 'vue-router'
-import { echo } from '../services/echo'
-import { useAuthStore } from '../stores/auth'
+import { createEcho } from '@services/echo'
+import { useAuthStore } from '@stores/auth'
 
 const accepted = ref([])
 const router = useRouter()
-const authStore = useAuthStore()
+const auth = useAuthStore()
+const echo = createEcho(auth.token)
 
 
 const loadAccepted = async () => {
@@ -40,7 +41,7 @@ const openChat = (userId) => {
 
 onMounted(() => {
     loadAccepted()
-    const userId = authStore.user?.id
+    const userId = auth.user?.id
     if (!userId) return
     echo.private(`user.${userId}`)
         .listen('.follow-accepted', () => {
@@ -50,7 +51,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-    const userId = authStore.user?.id
+    const userId = auth.user?.id
     if (userId) {
         echo.leave(`private-user.${userId}`)
     }

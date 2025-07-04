@@ -11,24 +11,20 @@
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
-import { useAuthStore } from '../stores/auth'
+import { useAuthStore } from '@stores/auth'
 import { useRouter } from 'vue-router'
 
 const auth = useAuthStore()
 const router = useRouter()
 const password = ref('')
 
-async function submit() {
+const submit = async () => {
   try {
-    await axios.post('user/set-password', {
-      password: password.value,
-    }, {
-      headers: { Authorization: `Bearer ${auth.token}` }
-    })
+    await auth.setPassword(password.value)
     router.push('/profile')
   } catch (err) {
     alert('Failed to set password.')
-    console.error(err) // Log the error for debugging
+    console.error(err)
   }
 }
 </script>

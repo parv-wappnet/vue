@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import UserSearch from '../components/UserSearch.vue'
-import FollowRequests from '../components/FollowRequests.vue'
-import AcceptedFollows from '../components/AcceptedFollows.vue'
+import UserSearch from '@follow/UserSearch.vue'
+import FollowRequests from '@follow/FollowRequests.vue'
+import AcceptedFollows from '@follow/AcceptedFollows.vue'
 </script>

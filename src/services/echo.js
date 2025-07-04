@@ -6,15 +6,15 @@ import Pusher from 'pusher-js'
 // Useful during development to see Pusher connection details and events
 // Should be set to false in production
 Pusher.logToConsole = true
-
-export const echo = new Echo({
+export const createEcho = (token) => new Echo({
     broadcaster: 'pusher',
-    key: 'bec6814461fa57783faf',
-    cluster: 'ap2',
-    forceTLS: true, authEndpoint: 'http://localhost:8003/broadcasting/auth',
+    key: import.meta.env.VITE_PUSHER_APP_KEY,
+    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    forceTLS: import.meta.env.VITE_PUSHER_FORCE_TLS || true,
+    authEndpoint: import.meta.env.VITE_API_BROADCASTING_URL,
     auth: {
         headers: {
-            Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+            Authorization: `Bearer ${token || ''}`,
         },
     },
 })
