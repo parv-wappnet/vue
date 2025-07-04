@@ -15,7 +15,6 @@ return new class extends Migration {
         Schema::create('conversations', function (Blueprint $table) {
             $table->id(); // Primary key: id (bigint unsigned auto-increment)
 
-            $table->string('name')->nullable(); // Optional conversation name (for group chats)
             $table->enum('type', ['private', 'group'])->default('private'); // Chat type
 
             $table->text('description')->nullable(); // Optional description (for group chats)

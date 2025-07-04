@@ -13,7 +13,6 @@ class Conversation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
         'type',
         'description',
         'created_by',

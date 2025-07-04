@@ -17,24 +17,39 @@ class FollowController extends Controller
     {
         $request->validate(['email' => 'required|email']);
         $user = User::where('email', $request->email)->first();
-        return $user ? response()->json($user) : response()->json(['message' => 'User not found'], 404);
+        return $user ? response()->json(["user" => $user]) : response()->json(['message' => 'User not found']);
     }
 
     public function sendRequest(Request $request)
     {
         $data = $request->validate(['receiver_id' => 'required|exists:users,id']);
+
+        // Check if request already exists
+        $existingRequest = FollowRequest::where('sender_id', $request->user()->id)
+            ->where('receiver_id', $data['receiver_id'])
+            ->first();
+
+        if ($existingRequest) {
+            if ($existingRequest->status === 'pending') {
+                return response()->json(['message' => 'Follow request is already in pending state']);
+            }
+
+            if ($existingRequest->status === 'accepted') {
+                return response()->json([
+                    'message' => 'Already connected',
+                ]);
+            }
+        }
+
         $follow = FollowRequest::create([
             'sender_id' => $request->user()->id,
             'receiver_id' => $data['receiver_id'],
         ]);
-        // Dispatch follow request event
-        // \Log::info("broadcasting follow request from user ID: {$request->user()->id} to receiver ID: {$data['receiver_id']}");
+
         event(new FollowRequestSent($request->user(), $data['receiver_id']));
-        // broadcast(new FollowRequestSent($request->user(), $data['receiver_id']))->toOthers();
 
         return response()->json(['message' => 'Follow request sent', 'follow' => $follow]);
     }
-
     public function respondRequest(Request $request)
     {
         $data = $request->validate([

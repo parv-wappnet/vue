@@ -26,6 +26,7 @@ return new class extends Migration {
             $table->text('description')
                 ->nullable()
                 ->comment('Optional group description or purpose');
+            $table->string('name')->nullable(); // Optional conversation name (for group chats)
 
             $table->foreignId('created_by')
                 ->constrained('users')

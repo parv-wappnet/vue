@@ -13,6 +13,7 @@ class Group extends Model
         'admins',
         'members',
         'description',
+        'name',
         'created_by',
     ];
 
