@@ -3,10 +3,19 @@
     <div class="chat-container p-4">
         <h3 class="text-lg font-bold mb-4">Conversation: {{ conversationName }}</h3>
 
-        <div class="chat-messages h-80 overflow-y-auto border p-2 mb-4">
-            <ChatMessageItem v-for="message in messages" :key="message.id" :message="message"
-                :currentUserId="currentUserId" />
+        <div class="chat-messages h-80 overflow-y-auto border p-2 mb-4 relative">
+            <template v-for="(messageGroup, date) in groupedMessages" :key="date">
+                <div class="message-day-group">
+                    <div class="date">
+                        {{ formatDate(date) }}
+                    </div>
+                    <ChatMessageItem v-for="message in messageGroup" :key="message.id" :message="message"
+                        :currentUserId="currentUserId" />
+                </div>
+            </template>
+
         </div>
+
 
         <ChatInputBox @send="sendMessage" />
     </div>
@@ -31,6 +40,34 @@ const userId = ref(route.params.userId)
 const conversationId = ref(null)
 const echo = createEcho(auth.token)
 
+// Group messages by date
+const groupedMessages = computed(() => {
+    const groups = {}
+    messages.value.forEach(message => {
+        const date = new Date(message.created_at).toLocaleDateString()
+        if (!groups[date]) {
+            groups[date] = []
+        }
+        groups[date].push(message)
+    })
+    return groups
+})
+
+// Format date for display
+const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    if (dateString === today.toLocaleDateString()) {
+        return 'Today'
+    } else if (dateString === yesterday.toLocaleDateString()) {
+        return 'Yesterday'
+    }
+    return dateString
+}
+
 // Get or create conversation
 const initConversation = async () => {
     try {
@@ -38,7 +75,6 @@ const initConversation = async () => {
         conversationName.value = res.data.name || 'Private Chat2'
         const id = res.data.conversation_id
         conversationId.value = id
-        console.log(conversationName.value, 'ID:', id)
         await loadMessages()
 
         echo.private(`chat.${id}`)
@@ -101,5 +137,19 @@ onBeforeUnmount(() => echo.leave(`chat.${conversationId}`))
     border-radius: 0.5rem;
     background-color: #fff;
     margin-bottom: 0.5rem;
+}
+
+.message-day-group {
+    margin-bottom: 1rem;
+}
+
+.date {
+    text-align: center;
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+    color: #666;
+    background-color: #f9f9f9;
+    border-radius: 0.25rem;
+    margin: 0.5rem 0;
 }
 </style>

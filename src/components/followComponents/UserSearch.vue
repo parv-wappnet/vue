@@ -22,7 +22,11 @@ const searchUser = async () => {
         const res = await axios.get('/follow/search', {
             params: { email: email.value }
         })
-        user.value = res.data
+        if (res.data.user) {
+            user.value = res.data.user
+        }
+        else { alert('User not found') }
+
     } catch (error) {
         user.value = null
         // Global error handler in axios.js will show alert
@@ -31,10 +35,10 @@ const searchUser = async () => {
 
 const sendFollowRequest = async () => {
     try {
-        await axios.post('/follow/request', {
+        const res = await axios.post('/follow/request', {
             receiver_id: user.value.id
         })
-        alert('Follow request sent')
+        alert(res.data.message)
     } catch (error) {
         // Error handled globally
     }

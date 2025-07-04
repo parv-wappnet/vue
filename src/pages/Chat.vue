@@ -4,7 +4,7 @@
     <UserSearch />
     <FollowRequests />
     <AcceptedFollows />
-    <router-link to="/profile">← Back to Profile</router-link>
+    <!-- <router-link to="/profile">← Back to Profile</router-link> -->
   </div>
 </template>
 

@@ -2,7 +2,7 @@
 <template>
     <div class="chat-input-container">
         <input v-model="newMessage" @keyup.enter="handleSend" placeholder="Type a message..." class="message-input" />
-        <button @click="handleSend" class="send-button">➤</button>
+        <button @click="handleSend" @keyup.enter="handleSend" class="send-button">➤</button>
     </div>
 </template>
 
