@@ -15,7 +15,7 @@ class MessageController extends Controller
     public function index($conversationId)
     {
         $conversation = Conversation::findOrFail($conversationId);
-        $messages = $conversation->messages()->with('sender:id,name,email')->get();
+        $messages = $conversation->messages()->with('sender:id,name,email')->orderBy('created_at', 'asc')->get();
         return response()->json($messages);
     }
 
