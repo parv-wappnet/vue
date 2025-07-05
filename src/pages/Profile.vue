@@ -4,8 +4,8 @@
     <img :src="auth.user.avatar" alt="avatar" width="80" />
     <p>{{ auth.user.email }}</p>
 
-    <router-link to="/chat">Go to Chat</router-link><br />
-    <button @click="auth.logout()">Logout</button>
+    <!-- <router-link to="/chat">Go to Chat</router-link><br /> -->
+    <!-- <button @click="auth.logout()">Logout</button> -->
   </div>
   <div v-else>
     <p>Not logged in</p>
