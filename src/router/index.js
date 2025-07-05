@@ -7,6 +7,7 @@ import SetPassword from '@pages/SetPassword.vue'
 import ChatWindow from '@pages/ChatWindow.vue'
 import GoogleCallback from '@pages/GoogleCallback.vue'
 import Signup from '@pages/Signup.vue'
+import Group from '@pages/Group.vue'
 import { authGuard } from './routeGuard'
 
 const routes = [
@@ -31,11 +32,18 @@ const routes = [
     beforeEnter: authGuard,
   },
   {
+    path: '/group',
+    name: 'Group',
+    component: Group,
+    beforeEnter: authGuard,
+  },
+  {
     path: '/chat/:userId',
     name: 'ChatWindow',
     component: ChatWindow,
     beforeEnter: authGuard,
   },
+
 ]
 
 const router = createRouter({

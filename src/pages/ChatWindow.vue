@@ -80,7 +80,7 @@ const initConversation = async () => {
         echo.private(`chat.${id}`)
             .listen('.MessageSent', (e) => {
                 if (e.sender_id !== auth.user.id) {
-                    messages.value.unshift(e)
+                    messages.value.push(e)
                 }
             })
     } catch (err) {
@@ -151,5 +151,7 @@ onBeforeUnmount(() => echo.leave(`chat.${conversationId}`))
     background-color: #f9f9f9;
     border-radius: 0.25rem;
     margin: 0.5rem 0;
+    position: sticky;
+    top: 0;
 }
 </style>
