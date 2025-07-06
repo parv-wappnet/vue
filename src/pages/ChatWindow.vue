@@ -4,18 +4,16 @@
         <h3 class="text-lg font-bold mb-4">Conversation: {{ conversationName }}</h3>
 
         <div class="chat-messages h-80 overflow-y-auto border p-2 mb-4 relative">
-            <template v-for="(messageGroup, date) in groupedMessages" :key="date">
-                <div class="message-day-group">
-                    <div class="date">
-                        {{ formatDate(date) }}
-                    </div>
-                    <ChatMessageItem v-for="message in messageGroup" :key="message.id" :message="message"
-                        :currentUserId="currentUserId" />
+            <template v-for="(message, index) in messages" :key="message.id">
+                <div v-if="showDateDivider(message, index)" class="date">
+                    {{ formatDate(message.created_at) }}
                 </div>
+                <ChatMessageItem 
+                    :message="message"
+                    :currentUserId="currentUserId" 
+                />
             </template>
-
         </div>
-
 
         <ChatInputBox @send="sendMessage" />
     </div>
@@ -40,33 +38,24 @@ const userId = ref(route.params.userId)
 const conversationId = ref(null)
 const echo = createEcho(auth.token)
 
-// Group messages by date
-const groupedMessages = computed(() => {
-    const groups = {}
-    messages.value.forEach(message => {
-        const date = new Date(message.created_at).toLocaleDateString()
-        if (!groups[date]) {
-            groups[date] = []
-        }
-        groups[date].push(message)
+const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
     })
-    return groups
-})
-
-// Format date for display
-const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    const today = new Date()
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
-
-    if (dateString === today.toLocaleDateString()) {
-        return 'Today'
-    } else if (dateString === yesterday.toLocaleDateString()) {
-        return 'Yesterday'
-    }
-    return dateString
 }
+
+const showDateDivider = (message, index) => {
+    if (index === messages.value.length - 1) return true
+    
+    const currentDate = new Date(message.created_at).toDateString()
+    const previousDate = new Date(messages.value[index + 1].created_at).toDateString()
+    
+    return currentDate !== previousDate
+}
+
+
 
 // Get or create conversation
 const initConversation = async () => {
@@ -80,7 +69,8 @@ const initConversation = async () => {
         echo.private(`chat.${id}`)
             .listen('.MessageSent', (e) => {
                 if (e.sender_id !== auth.user.id) {
-                    messages.value.push(e)
+                    console.log('📬 New message received:', e)
+                    messages.value.unshift(e)                  
                 }
             })
     } catch (err) {

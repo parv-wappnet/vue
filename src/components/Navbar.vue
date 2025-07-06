@@ -7,6 +7,7 @@
         </div>
         <div class="navbar-right">
             <router-link to="/profile" class="navbar-link">👤 Profile</router-link>
+            <router-link to="/group" class="navbar-link">👥 Groups</router-link>
             <router-link to="/chat" class="navbar-link">💭 Chats</router-link>
             <button @click="logout" class="logout-btn">Logout</button>
         </div>
