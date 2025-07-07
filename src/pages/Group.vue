@@ -5,14 +5,10 @@
     <div v-if="groups.length === 0" class="text-gray-600">No groups found.</div>
     <div v-else class="space-y-4">
       <div v-for="group in groups" :key="group.id" class="p-4 border rounded shadow-sm bg-white">
-        <h2 class="text-lg font-semibold">Group ID: {{ group.id }}</h2>
-        <p class="text-sm text-gray-700">Description: {{ group.description || 'No description' }}</p>
-        <p class="text-sm mt-1">Members: {{ group.members.length }}</p>
-        <p class="text-sm">Admins: {{ group.admins.join(', ') }}</p>
-
+        <p class="text-sm text-gray-700">name: {{ group.name || 'No name' }}</p>
         <!-- Group.vue -->
         <button class="mt-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-          @click="$router.push({ name: 'ChatWindow', params: { userId: group.id } })">
+          @click="$router.push({ name: 'ChatWindow', params: { userId: group.conversations.id } })">
           View Group
         </button>
       </div>
@@ -22,8 +18,7 @@
 
     <h2 class="text-xl font-semibold mb-2">Create New Group</h2>
     <form @submit.prevent="createGroup" class="space-y-4">
-      <input v-model="newGroup.description" type="text" placeholder="Group description"
-        class="w-full p-2 border rounded" />
+      <input v-model="newGroup.name" type="text" placeholder="Group name" class="w-full p-2 border rounded" />
       <UserSearch @user-found="handleUserFound" />
       <!-- List searched users -->
       <div v-if="searchedUsers.length > 0" class="mt-4 space-y-2">
@@ -69,7 +64,7 @@ import UserSearch from '@follow/UserSearch.vue'
 
 const groups = ref([])
 const newGroup = ref({
-  description: '',
+  name: '',
   membersInput: ''
 })
 const searchedUsers = ref([])
@@ -127,12 +122,12 @@ const createGroup = async () => {
 
   try {
     const res = await axios.post('/groups', {
-      description: newGroup.value.description,
+      name: newGroup.value.name,
       members
     })
     alert('✅ Group created!')
     groups.value.push(res.data.group)
-    newGroup.value.description = ''
+    newGroup.value.name = ''
     newGroup.value.membersInput = ''
   } catch (err) {
     console.error('❌ Failed to create group:', err)
@@ -144,7 +139,7 @@ const createGroup = async () => {
 const viewGroup = async (id) => {
   try {
     const res = await axios.get(`/groups/${id}`)
-    alert(`Group ID ${id} Details:\n\nDescription: ${res.data.description}\nMembers: ${res.data.members.join(', ')}`)
+    alert(`Group ID ${id} Details:\n\nname: ${res.data.name}\nMembers: ${res.data.members.join(', ')}`)
   } catch (err) {
     console.error('❌ Failed to fetch group details:', err)
     alert('You are not authorized to view this group')

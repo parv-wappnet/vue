@@ -8,10 +8,7 @@
                 <div v-if="showDateDivider(message, index)" class="date">
                     {{ formatDate(message.created_at) }}
                 </div>
-                <ChatMessageItem 
-                    :message="message"
-                    :currentUserId="currentUserId" 
-                />
+                <ChatMessageItem :message="message" :currentUserId="currentUserId" />
             </template>
         </div>
 
@@ -35,7 +32,7 @@ const conversationName = ref('Private Chat')
 const auth = useAuthStore()
 const currentUserId = computed(() => auth.user?.id)
 const userId = ref(route.params.userId)
-const conversationId = ref(null)
+const conversationId = ref(route.params.userId)
 const echo = createEcho(auth.token)
 
 const formatDate = (date) => {
@@ -48,10 +45,10 @@ const formatDate = (date) => {
 
 const showDateDivider = (message, index) => {
     if (index === messages.value.length - 1) return true
-    
+
     const currentDate = new Date(message.created_at).toDateString()
     const previousDate = new Date(messages.value[index + 1].created_at).toDateString()
-    
+
     return currentDate !== previousDate
 }
 
@@ -60,17 +57,18 @@ const showDateDivider = (message, index) => {
 // Get or create conversation
 const initConversation = async () => {
     try {
-        const res = await axios.get(`/conversations/private/${userId.value}`)
-        conversationName.value = res.data.name || 'Private Chat2'
-        const id = res.data.conversation_id
-        conversationId.value = id
+        // const res = await axios.get(`/conversations/private/${userId.value}`)
+        // conversationName.value = res?.data?.name || 'Private Chat2'
+        // const id = res.data.conversation_id
+        conversationId.value = userId.value
+        console.log('conversationId:', conversationId.value)
         await loadMessages()
 
-        echo.private(`chat.${id}`)
+        echo.private(`chat.${conversationId.value}`)
             .listen('.MessageSent', (e) => {
                 if (e.sender_id !== auth.user.id) {
                     console.log('📬 New message received:', e)
-                    messages.value.unshift(e)                  
+                    messages.value.unshift(e)
                 }
             })
     } catch (err) {
@@ -83,7 +81,8 @@ const loadMessages = async () => {
     if (!conversationId.value) return
     try {
         const res = await axios.get(`/conversations/${conversationId.value}/messages`)
-        messages.value = res.data.reverse()
+        conversationName.value = res?.data?.name || 'Private Chat'
+        messages.value = res.data.messages.reverse()
     } catch (e) {
         console.error('❌ Failed to load messages:', e)
     }
@@ -138,7 +137,7 @@ onBeforeUnmount(() => echo.leave(`chat.${conversationId}`))
     padding: 0.5rem 0;
     font-size: 0.9rem;
     color: #666;
-    background-color: #f9f9f9;
+    /* background-color: #f9f9f9; */
     border-radius: 0.25rem;
     margin: 0.5rem 0;
     position: sticky;

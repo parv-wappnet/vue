@@ -34,7 +34,9 @@ const loadAccepted = async () => {
     }
 }
 
-const openChat = (userId) => {
+const openChat = async (userIda) => {
+    const res = await axios.get(`/conversations/private/${userIda}`)
+    const userId = res.data.conversation_id
     router.push({ name: 'ChatWindow', params: { userId } })
 }
 
