@@ -30,16 +30,15 @@ Broadcast::channel('chat.{conversationId}', function ($user, $conversationId) {
             return false; // User is not authorized for private conversation
         }
     }
-    // } elseif ($conversation->type === 'group') {
-    //     // For group conversations, check if the user is a participant
-    //     if ($conversation->participants()->where('user_id', $user->id)->exists()) {
-    //         \Log::info('User is authorized for group conversation: ' . $conversationId);
-    //         return true; // User is authorized for group conversation
-    //     } else {
-    //         \Log::warning('User is not authorized for group conversation: ' . $conversationId);
-    //         return false; // User is not authorized for group conversation
-    //     }
-    // }
+    if ($conversation->type === 'group') {
+        // For group conversations, check if the user is a participant
+        if (in_array($user->id, $conversation->group->members)) {
+            return true; // User is authorized for group conversation
+        } else {
+            \Log::warning('User is not authorized for group conversation: ' . $conversationId);
+            return false; // User is not authorized for group conversation
+        }
+    }
     \Log::warning('Conversation type not recognized: ' . $conversation->type);
     return false; // Conversation type not recognized
 });

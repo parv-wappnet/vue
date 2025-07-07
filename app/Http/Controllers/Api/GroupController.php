@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Conversation;
 use App\Models\Group;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +13,16 @@ class GroupController extends Controller
     // List all groups the user is part of
     public function index()
     {
-        $groups = Group::whereJsonContains('members', Auth::id())->get();
+        $groups = Group::whereJsonContains('members', Auth::id())
+            ->with('conversations:id,type,group_id')
+            ->get();
+
+        // Manually append user info from accessors
+        $groups->each(function ($group) {
+            $group->admin_users = $group->admin_users;   // dynamic accessor
+            $group->member_users = $group->member_users; // dynamic accessor
+        });
+
         return response()->json($groups);
     }
 
@@ -20,7 +30,7 @@ class GroupController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'description' => 'nullable|string',
+            'name' => 'nullable|string',
             'members' => 'required|array|min:1',
             'members.*' => 'exists:users,id',
         ]);
@@ -28,11 +38,17 @@ class GroupController extends Controller
         $group = Group::create([
             'admins' => [Auth::id()],
             'members' => array_unique(array_merge($validated['members'], [Auth::id()])),
-            'description' => $validated['description'] ?? null,
+            'name' => $validated['name'] ?? null,
             'created_by' => Auth::id(),
         ]);
 
-        return response()->json(['message' => 'Group created', 'group' => $group], 201);
+        $conversation = Conversation::create([
+            'type' => 'group',
+            'created_by' => Auth::id(),
+            'group_id' => $group->id,
+        ]);
+
+        return response()->json(['message' => 'Group created', 'group' => $group, 'conversation' => $conversation], 201);
     }
 
     // Show a single group

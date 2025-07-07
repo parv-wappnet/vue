@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Group extends Model
 {
@@ -29,6 +30,17 @@ class Group extends Model
 
     public function conversations()
     {
-        return $this->hasMany(Conversation::class, 'group_id');
+        return $this->HasOne(Conversation::class, 'group_id');
+    }
+    // 🧠 Custom accessor to get admin users
+    public function getAdminUsersAttribute()
+    {
+        return User::whereIn('id', $this->admins)->get();
+    }
+
+    // 🧠 Custom accessor to get member users
+    public function getMemberUsersAttribute()
+    {
+        return User::whereIn('id', $this->members)->get();
     }
 }

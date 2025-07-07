@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use App\Events\FollowRequestSent;
+use App\Models\Conversation;
 
 class FollowController extends Controller
 {
@@ -65,6 +66,12 @@ class FollowController extends Controller
         $follow->update(['status' => $data['status']]);
         if ($request->status === 'accepted') {
             event(new FollowRequestAccepted($follow->sender, $follow->receiver));
+
+            $conversation = Conversation::create([
+                'type' => 'private',
+                'created_by' => $request->user()->id,
+                'receiver_id' => $follow->sender_id,
+            ]);
         }
         return response()->json(['message' => 'Response recorded']);
     }

@@ -16,7 +16,21 @@ class MessageController extends Controller
     {
         $conversation = Conversation::findOrFail($conversationId);
         $messages = $conversation->messages()->with('sender:id,name,email')->orderBy('created_at', 'asc')->get();
-        return response()->json($messages);
+
+        if ($conversation->type == 'private') {
+            $conversation_name = $conversation->creator->id == Auth::id() ? $conversation->receiver->name : $conversation->creator->name;
+        } else if ($conversation->type == 'group') {
+            $conversation_name = $conversation->group->name;
+        } else {
+            $conversation_name = 'Conversation';
+        }
+
+        return response()->json([
+            'messages' => $messages,
+            'conversation_id' => $conversation->id,
+            'name' => $conversation_name,
+            'type' => $conversation->type
+        ]);
     }
 
     // Send a message in a conversation
@@ -37,6 +51,8 @@ class MessageController extends Controller
 
     public function getOrCreatePrivateConversation(Request $request, $otherUserId)
     {
+        \Log::info('getOrCreatePrivateConversation called with otherUserId: ' . $otherUserId);
+        \Log::info('Authenticated user ID: ' . json_decode($request) . 'id' . $request->user()->id);
 
         $authUser = $request->user();
         $conversation = Conversation::where('type', 'private')
@@ -54,14 +70,7 @@ class MessageController extends Controller
                 'receiver_id' => $otherUserId,
             ]);
         }
-        if ($conversation->type == 'private') {
-            $conversation_name = $conversation->creator->id == $otherUserId ? $conversation->creator->name : $conversation->receiver->name;
-        } else if ($conversation->type == 'group') {
-            $conversation_name = $conversation->group->name;
-        } else {
-            $conversation_name = 'Conversation';
-        }
 
-        return response()->json(['conversation_id' => $conversation->id, 'name' => $conversation_name, 'type' => $conversation->type]);
+        return response()->json(['conversation_id' => $conversation->id]);
     }
 }
