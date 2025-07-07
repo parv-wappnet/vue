@@ -16,9 +16,11 @@ class FollowController extends Controller
 {
     public function search(Request $request)
     {
-        $request->validate(['email' => 'required|email']);
-        $user = User::where('email', $request->email)->first();
-        return $user ? response()->json(["user" => $user]) : response()->json(['message' => 'User not found']);
+        $users = User::where('email', 'like', '%' . $request->email . '%')
+            ->limit(5) // optional limit
+            ->get(['id', 'name', 'email', 'avatar']); // only return needed fields
+
+        return response()->json(['users' => $users]);
     }
 
     public function sendRequest(Request $request)
