@@ -1,23 +1,23 @@
 <template>
     <div class="chat-container p-4">
         <h3 class="text-lg font-bold mb-4">Conversation: {{ conversationName }}</h3>
-
-        <div class="chat-messages h-80 overflow-y-auto border p-2 mb-4 relative">
-            <template v-for="(message, index) in messages" :key="message.id">
-                <!-- Date divider BEFORE first message of a day -->
-                <ChatMessageItem :message="message" :currentUserId="currentUserId" />
-                <div v-if="showDateDivider(message, index)" class="date">
-                    {{ formatDate(message.created_at) }}
-                </div>
-            </template>
+        <div ref="chatContainer" @scroll="handleScroll" style="overflow-y: auto">
+            <div class="chat-messages h-80 overflow-y-auto border p-2 mb-4 relative">
+                <template v-for="(message, index) in messages" :key="message.id">
+                    <!-- Date divider BEFORE first message of a day -->
+                    <ChatMessageItem :message="message" :currentUserId="currentUserId" />
+                    <div v-if="showDateDivider(message, index)" class="date">
+                        {{ formatDate(message.created_at) }}
+                    </div>
+                </template>
+            </div>
         </div>
-
         <ChatInputBox @send="sendMessage" />
     </div>
 </template>
 
 <script setup>
-import { onMounted, ref, computed, onBeforeUnmount } from 'vue'
+import { onMounted, ref, computed, onBeforeUnmount, nextTick } from 'vue'
 import axios from '../axios'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@stores/auth'
@@ -28,13 +28,18 @@ import ChatMessageItem from '@chat/ChatMessageItem.vue'
 const route = useRoute()
 const auth = useAuthStore()
 const currentUserId = computed(() => auth.user?.id)
+const conversationId = ref(route.params.userId)
+const conversationName = ref('Private Chat')
 
 const messages = ref([])
-const conversationName = ref('Private Chat')
-const conversationId = ref(route.params.userId)
-const echo = createEcho(auth.token)
+const offset = ref(0)
+const limit = 20
+const hasMore = ref(true)
+const loading = ref(false)
 
-// Format the date for the date divider
+const echo = createEcho(auth.token)
+const chatContainer = ref(null)
+
 const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -52,13 +57,24 @@ const showDateDivider = (message, index) => {
     return currentDate !== prevDate
 }
 
-// Fetch initial conversation and listen via Echo
+const handleScroll = () => {
+    const el = chatContainer.value
+    if (!el || loading.value || !hasMore.value) return
+    const scrollPercentage = (el.scrollTop / (el.scrollHeight - el.clientHeight)) * 100
+    if (scrollPercentage <= 10) {
+        loadMessages()
+    }
+}
+
 const initConversation = async () => {
     try {
         await loadMessages()
+        await scrollToBottom()
 
         echo.private(`chat.${conversationId.value}`)
             .listen('.MessageSent', (e) => {
+
+                // in future we can use it to confirm message sent successfully
                 if (e.sender_id !== currentUserId.value) {
                     console.log('📬 New message received:', e)
                     messages.value.unshift(e)
@@ -69,33 +85,70 @@ const initConversation = async () => {
     }
 }
 
-// Load messages for this conversation
-const loadMessages = async () => {
-    if (!conversationId.value) return
-
-    try {
-        const res = await axios.get(`/conversations/${conversationId.value}/messages`)
-        conversationName.value = res?.data?.name || 'Private Chat'
-        messages.value = res.data.messages.reverse()
-    } catch (e) {
-        console.error('❌ Failed to load messages:', e)
+const scrollToBottom = async () => {
+    await nextTick() // wait until DOM updates
+    const el = chatContainer.value
+    if (el) {
+        el.scrollTop = el.scrollHeight
     }
 }
 
-// Send message
+const loadMessages = async () => {
+    loading.value = true
+    try {
+        const res = await axios.get(`/conversations/${conversationId.value}/messages`, {
+            params: { offset: offset.value, limit }
+        })
+
+        const newMessages = res.data.messages
+        if (newMessages.length < limit) {
+            hasMore.value = false
+        }
+        messages.value.push(...newMessages)
+
+        conversationName.value = res.data.name || 'Private Chat'
+        offset.value += limit
+    } catch (err) {
+        console.error('❌ Failed to load messages:', err)
+    } finally {
+        loading.value = false
+    }
+}
+
 const sendMessage = async (messageText) => {
     if (!messageText || !conversationId.value) return
-
     try {
-        await axios.post(`/conversations/${conversationId.value}/messages`, { body: messageText })
-        await loadMessages()
+        await axios.post(`/conversations/${conversationId.value}/messages`, {
+            body: messageText
+        })
+        await scrollToBottom()
+        messages.value.unshift({
+            id: Date.now(), // Temporary ID until server response
+            content: messageText,
+            sender_id: currentUserId.value,
+            conversation_id: conversationId.value,
+            type: 'text',
+            created_at: new Date().toISOString(),
+            sender: {
+                id: currentUserId.value,
+                name: auth.user?.name,
+                email: auth.user?.email
+            }
+        })
     } catch (e) {
         console.error('❌ Failed to send message:', e)
     }
 }
 
-onMounted(() => initConversation())
-onBeforeUnmount(() => echo.leave(`chat.${conversationId.value}`))
+onMounted(() => {
+    initConversation()
+    chatContainer.value?.addEventListener('scroll', handleScroll)
+})
+
+onBeforeUnmount(() => {
+    echo.leave(`chat.${conversationId.value}`)
+    chatContainer.value?.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <style scoped>
