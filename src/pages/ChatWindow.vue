@@ -6,9 +6,17 @@
         <div class="chat-messages h-80 overflow-y-auto border p-2 mb-4 relative">
             <template v-for="(message, index) in messages" :key="message.id">
                 <div v-if="showDateDivider(message, index)" class="date">
-                    {{ formatDate(message.created_at) }}
+                    {{ formatDate(index === (messages.length - 1) ? message.created_at : messages[index -
+                        1]?.created_at ||
+                        message.created_at) }}
                 </div>
                 <ChatMessageItem :message="message" :currentUserId="currentUserId" />
+                <div v-if="(index === (messages.length - 1))" class="date">
+                    {{ formatDate(index === (messages.length - 1) ? message.created_at : messages[index -
+                        1]?.created_at ||
+                        message.created_at) }}
+                </div>
+
             </template>
         </div>
 
@@ -44,13 +52,15 @@ const formatDate = (date) => {
 }
 
 const showDateDivider = (message, index) => {
-    if (index === messages.value.length - 1) return true
+    // if (index === messages.value.length - 1) return true; // Always show for last message
+    if (index == 0) return false;
+    if (index === messages.value.length - 1) return false
 
-    const currentDate = new Date(message.created_at).toDateString()
-    const previousDate = new Date(messages.value[index + 1].created_at).toDateString()
-
-    return currentDate !== previousDate
+    const currentDate = new Date(message.created_at).toDateString();
+    const prevDate = new Date(messages.value[index - 1].created_at).toDateString();
+    return currentDate !== prevDate;
 }
+
 
 
 
