@@ -1,11 +1,13 @@
 <template>
-    <div>
-        <h3>Accepted Connections</h3>
-        <div v-if="accepted.length === 0">No accepted requests yet.</div>
+    <div class="accepted-follows-card">
+        <h3 class="accepted-follows-title">Accepted Connections</h3>
+        <div v-if="accepted.length === 0" class="text-center text-lg text-gray-600">
+            No accepted requests yet.
+        </div>
 
-        <ul v-else>
+        <ul v-else class="accepted-list">
             <li v-for="user in accepted" :key="user.id" @click="openChat(user.id)"
-                class="cursor-pointer hover:bg-gray-100 p-2">
+                class="accepted-item cursor-pointer hover:bg-gray-100">
                 {{ user.name }} ({{ user.email }})
             </li>
         </ul>
@@ -24,7 +26,6 @@ const router = useRouter()
 const auth = useAuthStore()
 const echo = createEcho(auth.token)
 
-
 const loadAccepted = async () => {
     try {
         const res = await axios.get('follow/accepted')
@@ -34,12 +35,11 @@ const loadAccepted = async () => {
     }
 }
 
-const openChat = async (userIda) => {
-    const res = await axios.get(`/conversations/private/${userIda}`)
-    const userId = res.data.conversation_id
-    router.push({ name: 'ChatWindow', params: { userId } })
+const openChat = async (userId) => {
+    const res = await axios.get(`/conversations/private/${userId}`)
+    const conversationId = res.data.conversation_id
+    router.push({ name: 'ChatWindow', params: { conversationId } })
 }
-
 
 onMounted(() => {
     loadAccepted()
@@ -61,18 +61,50 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-ul {
-    padding-left: 1rem;
+.accepted-follows-card {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.accepted-follows-title {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.accepted-list {
     list-style: none;
+    padding: 0;
 }
 
-li {
-    margin-bottom: 0.5rem;
+.accepted-item {
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
 }
 
-.cursor-pointer:hover {
+.accepted-item:hover {
     background-color: #f3f4f6;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
+}
+
+@media (max-width: 480px) {
+    .accepted-follows-card {
+        padding: 20px;
+    }
+
+    .accepted-follows-title {
+        font-size: 1.5rem;
+    }
+
+    .accepted-item {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
 }
 </style>

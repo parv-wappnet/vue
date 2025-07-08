@@ -1,58 +1,64 @@
 <template>
-  <div class="p-6 max-w-4xl mx-auto">
-    <h1 class="text-2xl font-bold mb-4">Your Groups</h1>
+  <div class="groups-container">
+    <div class="groups-card">
+      <h1 class="groups-title">Your Groups</h1>
 
-    <div v-if="groups.length === 0" class="text-gray-600">No groups found.</div>
-    <div v-else class="space-y-4">
-      <div v-for="group in groups" :key="group.id" class="p-4 border rounded shadow-sm bg-white">
-        <p class="text-sm text-gray-700">name: {{ group.name || 'No name' }}</p>
-        <!-- Group.vue -->
-        <button class="mt-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-          @click="$router.push({ name: 'ChatWindow', params: { userId: group.conversations.id } })">
-          View Group
-        </button>
+      <div v-if="groups.length === 0" class="text-center text-lg text-gray-600">
+        No groups found.
       </div>
-    </div>
-
-    <hr class="my-6" />
-
-    <h2 class="text-xl font-semibold mb-2">Create New Group</h2>
-    <form @submit.prevent="createGroup" class="space-y-4">
-      <input v-model="newGroup.name" type="text" placeholder="Group name" class="w-full p-2 border rounded" />
-      <UserSearch @user-found="handleUserFound" />
-      <!-- List searched users -->
-      <div v-if="searchedUsers.length > 0" class="mt-4 space-y-2">
-        <div v-for="user in searchedUsers" :key="user.id"
-          class="p-2 border rounded bg-gray-50 flex justify-between items-center">
-          <div>
-            <p class="font-medium">{{ user.name }} ({{ user.email }})</p>
-          </div>
-          <div class="flex gap-2">
-            <button @click="acceptUser(user)" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">
-              Accept
-            </button>
-            <button @click="rejectUser(user)" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700">
-              Reject
-            </button>
-          </div>
+      <div v-else class="space-y-4">
+        <div v-for="group in groups" :key="group.id"
+          class="group-item p-4 border rounded bg-white shadow-md hover:shadow-lg transition">
+          <p class="text-sm text-gray-700">name: {{ group.name || 'No name' }}</p>
+          <button class="mt-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+            @click="$router.push({ name: 'ChatWindow', params: { conversationId: group.conversations.id } })">
+            View Group
+          </button>
         </div>
       </div>
 
-      <!-- Accepted user IDs displayed -->
-      <div v-if="acceptedMembers.length > 0" class="mt-4">
-        <h4 class="text-sm font-semibold">Accepted Member Email:</h4>
-        <p class="text-sm text-gray-800">{{acceptedMembers.map(m => m.email).join('\n ')}}</p>
-      </div>
+      <hr class="divider my-6" />
 
+      <h2 class="create-group-title">Create New Group</h2>
+      <form @submit.prevent="createGroup" class="space-y-4">
+        <div class="input-group">
+          <label for="group-name" class="block text-sm text-gray-600">Group Name</label>
+          <div class="input-wrapper">
+            <span class="input-icon">📝</span>
+            <input v-model="newGroup.name" id="group-name" type="text" placeholder="Group name" required
+              class="w-full p-2 border rounded focus:outline-none" />
+          </div>
+        </div>
+        <UserSearch @user-found="handleUserFound" />
+        <div v-if="searchedUsers.length > 0" class="mt-4 space-y-2">
+          <div v-for="user in searchedUsers" :key="user.id"
+            class="user-item p-2 border rounded bg-white flex justify-between items-center hover:bg-gray-100 transition">
+            <div>
+              <p class="font-medium text-gray-800">{{ user.name }} ({{ user.email }})</p>
+            </div>
+            <div class="flex gap-2">
+              <button @click="acceptUser(user)"
+                class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                Accept
+              </button>
+              <button @click="rejectUser(user)"
+                class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition">
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
 
-      <!-- <label class="block text-sm">Add Member IDs (comma separated)</label> -->
-      <!-- <input v-model="newGroup.membersInput" type="text" placeholder="e.g., 2,3,4" class="w-full p-2 border rounded" /> -->
-      <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-        <!-- @click.prevent="createGroup" -->
-        Create Group
-      </button>
+        <div v-if="acceptedMembers.length > 0" class="mt-4">
+          <h4 class="text-sm font-semibold text-gray-700">Accepted Member Emails:</h4>
+          <p class="text-sm text-gray-800">{{acceptedMembers.map(m => m.email).join(', ')}}</p>
+        </div>
 
-    </form>
+        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+          Create Group
+        </button>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -71,38 +77,30 @@ const searchedUsers = ref([])
 const acceptedMembers = ref([])
 
 const handleUserFound = (user) => {
-  // Avoid duplicates in search list
   if (!searchedUsers.value.some(u => u.id === user.id)) {
     searchedUsers.value.push(user)
   }
 }
 
-// Accept user
 const acceptUser = (user) => {
   if (!acceptedMembers.value.some(u => u.id === user.id)) {
     acceptedMembers.value.push(user)
-
-    // Append user ID to membersInput string
     const currentIds = newGroup.value.membersInput
       .split(',')
       .map(id => id.trim())
       .filter(id => id !== '')
-
     if (!currentIds.includes(String(user.id))) {
       currentIds.push(String(user.id))
       newGroup.value.membersInput = currentIds.join(',')
     }
   }
-
-  // Remove from searched list
   searchedUsers.value = searchedUsers.value.filter(u => u.id !== user.id)
 }
 
-// Reject user
 const rejectUser = (user) => {
   searchedUsers.value = searchedUsers.value.filter(u => u.id !== user.id)
 }
-// Fetch groups on mount
+
 const fetchGroups = async () => {
   try {
     const res = await axios.get('/groups')
@@ -112,7 +110,6 @@ const fetchGroups = async () => {
   }
 }
 
-// Create a new group
 const createGroup = async () => {
   const members = newGroup.value.membersInput
     .split(',')
@@ -135,24 +132,134 @@ const createGroup = async () => {
   }
 }
 
-// View group details (basic usage for now)
-const viewGroup = async (id) => {
-  try {
-    const res = await axios.get(`/groups/${id}`)
-    alert(`Group ID ${id} Details:\n\nname: ${res.data.name}\nMembers: ${res.data.members.join(', ')}`)
-  } catch (err) {
-    console.error('❌ Failed to fetch group details:', err)
-    alert('You are not authorized to view this group')
-  }
-}
-
 onMounted(() => {
   fetchGroups()
 })
 </script>
 
 <style scoped>
-body {
-  background-color: #f9fafb;
+.groups-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  padding: 20px;
+}
+
+.groups-card {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+}
+
+.groups-title {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.create-group-title {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.input-group {
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 10px;
+  color: #999;
+  font-size: 1.2rem;
+}
+
+input {
+  width: 100%;
+  padding: 10px 10px 10px 40px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+input:focus {
+  border-color: #4facfe;
+}
+
+.group-item,
+.user-item {
+  border-radius: 5px;
+  transition: box-shadow 0.3s;
+}
+
+.group-item:hover,
+.user-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s;
+}
+
+.divider {
+  border: 0;
+  height: 1px;
+  background: #eee;
+}
+
+@media (max-width: 480px) {
+  .groups-card {
+    padding: 20px;
+  }
+
+  .groups-title {
+    font-size: 1.5rem;
+  }
+
+  .create-group-title {
+    font-size: 1.2rem;
+  }
+
+  input {
+    font-size: 0.9rem;
+    padding: 8px 8px 8px 35px;
+  }
+
+  button {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+
+  .group-item,
+  .user-item {
+    padding: 8px;
+  }
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
-    <div class="max-w-2xl mx-auto p-6 bg-gradient-to-br from-blue-50 to-purple-100 shadow-lg rounded-xl">
-        <h3 class="text-3xl font-bold mb-6 text-purple-700 text-center"> New Follow Requests</h3>
+    <div class="follow-requests-card">
+        <h3 class="follow-requests-title">New Follow Requests</h3>
 
         <div v-if="requests.length === 0" class="text-center text-lg text-gray-600">
             No new follow requests. 🎈
@@ -30,7 +30,6 @@
         </ul>
     </div>
 </template>
-
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
@@ -84,3 +83,58 @@ onBeforeUnmount(() => {
     }
 })
 </script>
+
+<style scoped>
+.follow-requests-card {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+}
+
+.follow-requests-title {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    border-radius: 10px;
+    transition: box-shadow 0.3s;
+}
+
+button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+@media (max-width: 480px) {
+    .follow-requests-card {
+        padding: 20px;
+    }
+
+    .follow-requests-title {
+        font-size: 1.5rem;
+    }
+
+    li {
+        padding: 10px;
+    }
+
+    button {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+}
+</style>

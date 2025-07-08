@@ -1,18 +1,19 @@
 <template>
-    <div class="chat-container p-4">
-        <h3 class="text-lg font-bold mb-4">Conversation: {{ conversationName }}</h3>
-        <div ref="chatContainer" @scroll="handleScroll" style="overflow-y: auto">
-            <div class="chat-messages h-80 overflow-y-auto border p-2 mb-4 relative">
+    <div class="chat-container">
+        <div class="chat-card">
+            <h3 class="chat-title">Conversation: {{ conversationName }}</h3>
+            <div ref="chatContainer" @scroll="handleScroll" class="chat-messages">
                 <template v-for="(message, index) in messages" :key="message.id">
                     <!-- Date divider BEFORE first message of a day -->
                     <ChatMessageItem :message="message" :currentUserId="currentUserId" />
-                    <div v-if="showDateDivider(message, index)" class="date">
+                    <div v-if="showDateDivider(message, index)" class="date-divider">
                         {{ formatDate(message.created_at) }}
                     </div>
                 </template>
+                <div v-if="loading" class="loading-indicator">Loading...</div>
             </div>
+            <ChatInputBox @send="sendMessage" />
         </div>
-        <ChatInputBox @send="sendMessage" />
     </div>
 </template>
 
@@ -28,7 +29,7 @@ import ChatMessageItem from '@chat/ChatMessageItem.vue'
 const route = useRoute()
 const auth = useAuthStore()
 const currentUserId = computed(() => auth.user?.id)
-const conversationId = ref(route.params.userId)
+const conversationId = ref(route.params.conversationId)
 const conversationName = ref('Private Chat')
 
 const messages = ref([])
@@ -41,10 +42,11 @@ const echo = createEcho(auth.token)
 const chatContainer = ref(null)
 
 const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
+    return new Date(date).toLocaleDateString('en-IN', {
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
+        day: 'numeric',
+        timeZone: 'Asia/Kolkata'
     })
 }
 
@@ -73,8 +75,6 @@ const initConversation = async () => {
 
         echo.private(`chat.${conversationId.value}`)
             .listen('.MessageSent', (e) => {
-
-                // in future we can use it to confirm message sent successfully
                 if (e.sender_id !== currentUserId.value) {
                     console.log('📬 New message received:', e)
                     messages.value.unshift(e)
@@ -86,7 +86,7 @@ const initConversation = async () => {
 }
 
 const scrollToBottom = async () => {
-    await nextTick() // wait until DOM updates
+    await nextTick()
     const el = chatContainer.value
     if (el) {
         el.scrollTop = el.scrollHeight
@@ -153,12 +153,30 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .chat-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    padding: 10px;
+}
+
+.chat-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
     max-width: 700px;
-    margin: 0 auto;
-    height: calc(100vh - 80px);
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    height: calc(100vh - 10px);
+}
+
+.chat-title {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
 .chat-messages {
@@ -169,19 +187,44 @@ onBeforeUnmount(() => {
     padding: 1rem;
     border: 1px solid #ddd;
     border-radius: 0.5rem;
-    background-color: #fff;
-    margin-bottom: 0.5rem;
+    background-color: #f9f9f9;
+    margin-bottom: 1rem;
 }
 
-.date {
+.date-divider {
     text-align: center;
     padding: 0.5rem 0;
     font-size: 0.9rem;
     color: #666;
-    /* background-color: #f9f9f9; */
+    background-color: #e0e0e0;
     border-radius: 0.25rem;
     margin: 0.5rem 0;
-    position: sticky;
-    top: 0;
+}
+
+.loading-indicator {
+    text-align: center;
+    padding: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 480px) {
+    .chat-card {
+        padding: 20px;
+        height: calc(100vh - 60px);
+    }
+
+    .chat-title {
+        font-size: 1.5rem;
+    }
+
+    .chat-messages {
+        padding: 0.5rem;
+    }
+
+    .date-divider,
+    .loading-indicator {
+        font-size: 0.8rem;
+    }
 }
 </style>

@@ -38,7 +38,7 @@ const routes = [
     beforeEnter: authGuard,
   },
   {
-    path: '/chat/:userId',
+    path: '/chat/:conversationId',
     name: 'ChatWindow',
     component: ChatWindow,
     beforeEnter: authGuard,
