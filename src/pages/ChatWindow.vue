@@ -153,7 +153,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .chat-container {
-    min-height: 100vh;
+    min-height: 88dvh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -169,7 +169,7 @@ onBeforeUnmount(() => {
     max-width: 700px;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 10px);
+    height: 80dvh;
 }
 
 .chat-title {

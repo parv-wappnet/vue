@@ -37,6 +37,7 @@ const logout = () => {
     align-items: center;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 20px;
 }
 
 .navbar-left .navbar-logo {
