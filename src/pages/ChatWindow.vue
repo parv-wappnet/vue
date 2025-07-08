@@ -1,22 +1,14 @@
-<!-- src/components/ChatWindow.vue -->
 <template>
     <div class="chat-container p-4">
         <h3 class="text-lg font-bold mb-4">Conversation: {{ conversationName }}</h3>
 
         <div class="chat-messages h-80 overflow-y-auto border p-2 mb-4 relative">
             <template v-for="(message, index) in messages" :key="message.id">
-                <div v-if="showDateDivider(message, index)" class="date">
-                    {{ formatDate(index === (messages.length - 1) ? message.created_at : messages[index -
-                        1]?.created_at ||
-                        message.created_at) }}
-                </div>
+                <!-- Date divider BEFORE first message of a day -->
                 <ChatMessageItem :message="message" :currentUserId="currentUserId" />
-                <div v-if="(index === (messages.length - 1))" class="date">
-                    {{ formatDate(index === (messages.length - 1) ? message.created_at : messages[index -
-                        1]?.created_at ||
-                        message.created_at) }}
+                <div v-if="showDateDivider(message, index)" class="date">
+                    {{ formatDate(message.created_at) }}
                 </div>
-
             </template>
         </div>
 
@@ -34,15 +26,15 @@ import ChatInputBox from '@chat/ChatInputBox.vue'
 import ChatMessageItem from '@chat/ChatMessageItem.vue'
 
 const route = useRoute()
-const newMessage = ref('')
-const messages = ref([])
-const conversationName = ref('Private Chat')
 const auth = useAuthStore()
 const currentUserId = computed(() => auth.user?.id)
-const userId = ref(route.params.userId)
+
+const messages = ref([])
+const conversationName = ref('Private Chat')
 const conversationId = ref(route.params.userId)
 const echo = createEcho(auth.token)
 
+// Format the date for the date divider
 const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -51,32 +43,23 @@ const formatDate = (date) => {
     })
 }
 
+// Only show date divider before first message of the day
 const showDateDivider = (message, index) => {
-    // if (index === messages.value.length - 1) return true; // Always show for last message
-    if (index == 0) return false;
-    if (index === messages.value.length - 1) return false
+    if (index === messages.value.length - 1) return true // last message (first in reverse)
 
-    const currentDate = new Date(message.created_at).toDateString();
-    const prevDate = new Date(messages.value[index - 1].created_at).toDateString();
-    return currentDate !== prevDate;
+    const currentDate = new Date(message.created_at).toDateString()
+    const prevDate = new Date(messages.value[index + 1].created_at).toDateString()
+    return currentDate !== prevDate
 }
 
-
-
-
-// Get or create conversation
+// Fetch initial conversation and listen via Echo
 const initConversation = async () => {
     try {
-        // const res = await axios.get(`/conversations/private/${userId.value}`)
-        // conversationName.value = res?.data?.name || 'Private Chat2'
-        // const id = res.data.conversation_id
-        conversationId.value = userId.value
-        console.log('conversationId:', conversationId.value)
         await loadMessages()
 
         echo.private(`chat.${conversationId.value}`)
             .listen('.MessageSent', (e) => {
-                if (e.sender_id !== auth.user.id) {
+                if (e.sender_id !== currentUserId.value) {
                     console.log('📬 New message received:', e)
                     messages.value.unshift(e)
                 }
@@ -86,9 +69,10 @@ const initConversation = async () => {
     }
 }
 
-// Load messages
+// Load messages for this conversation
 const loadMessages = async () => {
     if (!conversationId.value) return
+
     try {
         const res = await axios.get(`/conversations/${conversationId.value}/messages`)
         conversationName.value = res?.data?.name || 'Private Chat'
@@ -100,20 +84,18 @@ const loadMessages = async () => {
 
 // Send message
 const sendMessage = async (messageText) => {
-    if (messageText && conversationId.value) {
-        try {
-            await axios.post(`/conversations/${conversationId.value}/messages`, {
-                body: messageText,
-            })
-            await loadMessages()
-        } catch (e) {
-            console.error('❌ Failed to send message:', e)
-        }
+    if (!messageText || !conversationId.value) return
+
+    try {
+        await axios.post(`/conversations/${conversationId.value}/messages`, { body: messageText })
+        await loadMessages()
+    } catch (e) {
+        console.error('❌ Failed to send message:', e)
     }
 }
 
 onMounted(() => initConversation())
-onBeforeUnmount(() => echo.leave(`chat.${conversationId}`))
+onBeforeUnmount(() => echo.leave(`chat.${conversationId.value}`))
 </script>
 
 <style scoped>
@@ -136,10 +118,6 @@ onBeforeUnmount(() => echo.leave(`chat.${conversationId}`))
     border-radius: 0.5rem;
     background-color: #fff;
     margin-bottom: 0.5rem;
-}
-
-.message-day-group {
-    margin-bottom: 1rem;
 }
 
 .date {
