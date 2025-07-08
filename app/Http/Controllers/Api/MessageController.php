@@ -12,13 +12,25 @@ use Illuminate\Support\Facades\Auth;
 class MessageController extends Controller
 {
     // Fetch all messages for a conversation
-    public function index($conversationId)
+    public function index(Request $request, $conversationId)
     {
-        $conversation = Conversation::findOrFail($conversationId);
-        $messages = $conversation->messages()->with('sender:id,name,email')->orderBy('created_at', 'asc')->get();
+        $limit = $request->query('limit', 20); // default 20 messages
+        $offset = $request->query('offset', 0); // default 0 offset (last 20)
 
+        $conversation = Conversation::findOrFail($conversationId);
+
+        $messages = $conversation->messages()
+            ->with('sender:id,name,email')
+            ->orderBy('created_at', 'desc')
+            ->offset($offset)
+            ->limit($limit)
+            ->get();
+
+        // Determine name for the conversation
         if ($conversation->type == 'private') {
-            $conversation_name = $conversation->creator->id == Auth::id() ? $conversation->receiver->name : $conversation->creator->name;
+            $conversation_name = $conversation->creator->id == Auth::id()
+                ? $conversation->receiver->name
+                : $conversation->creator->name;
         } else if ($conversation->type == 'group') {
             $conversation_name = $conversation->group->name;
         } else {
@@ -32,6 +44,7 @@ class MessageController extends Controller
             'type' => $conversation->type
         ]);
     }
+
 
     // Send a message in a conversation
     public function store(Request $request, $conversationId)
@@ -51,9 +64,6 @@ class MessageController extends Controller
 
     public function getOrCreatePrivateConversation(Request $request, $otherUserId)
     {
-        \Log::info('getOrCreatePrivateConversation called with otherUserId: ' . $otherUserId);
-        \Log::info('Authenticated user ID: ' . json_decode($request) . 'id' . $request->user()->id);
-
         $authUser = $request->user();
         $conversation = Conversation::where('type', 'private')
             ->where(function ($query) use ($authUser, $otherUserId) {
