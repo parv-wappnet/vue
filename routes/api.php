@@ -31,7 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', function (Request $request) {
         return $request->user();
     });
-    Route::post('/user/set-password', [AuthController::class, 'setPassword']);
+    Route::post('/set-profile', [AuthController::class, 'setProfile']);
 
     // Follow Routes
     Route::prefix('follow')->group(function () {

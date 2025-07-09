@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\FileManager;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -49,21 +51,28 @@ class AuthController extends Controller
         return response()->json(['user' => $user, 'token' => $token]);
     }
 
-    public function setPassword(Request $request)
+    public function setProfile(Request $request)
     {
         $request->validate([
-            'password' => 'required|min:6',
+            'password' => 'required|string|min:6',
+            'photo' => 'nullable|image|max:2048', // optional image
         ]);
 
-        $user = $request->user();
+        $user = Auth::user();
         $user->password = bcrypt($request->password);
+
+        if ($request->hasFile('photo')) {
+            // Upload to S3 using FileManager
+            $relativePath = FileManager::upload($request, 'profile-photos', 'photo');
+            \Log::info('Uploaded profile photo', ['path' => $relativePath]);
+            $user->avatar = FileManager::getUrl($relativePath); // full URL
+        }
+
         $user->save();
-        $token = $user->createToken('api-token')->plainTextToken;
-        return response()->json([
-            'user' => $user,
-            'token' => $token
-        ]);
+
+        return response()->json(['message' => 'Profile updated successfully']);
     }
+
 
     public function redirectToGoogle()
     {
