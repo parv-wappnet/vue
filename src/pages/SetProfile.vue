@@ -9,6 +9,8 @@
             <span class="input-icon">🔒</span>
             <input v-model="password" id="password" type="password" placeholder="Enter new password" required />
           </div>
+          <input type="file" @change="handleFileUpload" accept="image/*" />
+
         </div>
         <button type="submit" class="set-password-button">Set Password</button>
       </form>
@@ -20,17 +22,28 @@
 import { ref } from 'vue'
 import { useAuthStore } from '@stores/auth'
 import { useRouter } from 'vue-router'
+import axios from '@services/axios'
 
 const auth = useAuthStore()
 const router = useRouter()
 const password = ref('')
+const profilePhoto = ref(null)
 
+const handleFileUpload = (e) => {
+  profilePhoto.value = e.target.files[0]
+}
 const submit = async () => {
+  const formData = new FormData()
+  formData.append('password', password.value)
+  formData.append('photo', profilePhoto.value)
+
   try {
-    await auth.setPassword(password.value)
+    await axios.post('set-profile', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
     router.push('/profile')
   } catch (err) {
-    alert('Failed to set password.')
+    alert('Failed to set profile.')
     console.error(err)
   }
 }

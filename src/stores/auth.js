@@ -45,10 +45,10 @@ export const useAuthStore = defineStore('auth', {
      * Returns: Promise<void>
      * Purpose: Updates user's password in the backend
      */
-    async setPassword(password) {
-      const res = await axios.post('user/set-password', { password:password })
-      this.setAuth(res.data.user, res.data.token)
-    },
+    // async setProfile(password) {
+    //   const res = await axios.post('user/set-password', { password:password })
+    //   this.setAuth(res.data.user, res.data.token)
+    // },
 
     /**
      * Registers a new user

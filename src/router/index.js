@@ -3,7 +3,7 @@ import Landing from '@pages/Landing.vue'
 import Login from '@pages/Login.vue'
 import Profile from '@pages/Profile.vue'
 import Chat from '@pages/Chat.vue'
-import SetPassword from '@pages/SetPassword.vue'
+import SetProfile from '@pages/SetProfile.vue'
 import ChatWindow from '@pages/ChatWindow.vue'
 import GoogleCallback from '@pages/GoogleCallback.vue'
 import Signup from '@pages/Signup.vue'
@@ -13,7 +13,7 @@ import { authGuard } from './routeGuard'
 const routes = [
   { path: '/', name: 'Landing', component: Landing },
   { path: '/login', name: 'Login', component: Login },
-  { path: '/set-password', name: 'SetPassword', component: SetPassword },
+  { path: '/set-password', name: 'SetProfile', component: SetProfile },
   { path: '/login/callback', name: 'GoogleCallback', component: GoogleCallback },
   { path: '/signup', name: 'Signup', component: Signup },
 
