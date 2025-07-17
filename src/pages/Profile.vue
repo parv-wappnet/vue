@@ -3,7 +3,8 @@
     <div class="profile-card">
       <div v-if="auth.user" class="profile-content">
         <h1 class="profile-title">Welcome, {{ auth.user.name }}</h1>
-        <img :src="auth.user.avatar" alt="avatar" class="profile-avatar" />
+        <img :src="auth.user.avatar.includes('google') ? auth.user.avatar : auth.user.avatar_url" alt="avatar"
+          class="profile-avatar" />
         <p class="profile-email">{{ auth.user.email }}</p>
       </div>
       <div v-else class="profile-content">

@@ -6,7 +6,9 @@ import path from 'path'
 export default defineConfig({
   plugins: [vue()],
   server: {
-    port: 5174
+    port: 5174,
+    host: true,
+    allowedHosts: 'all', // ⚠️ allow all external hosts
   },
   build: {
     sourcemap: true,
