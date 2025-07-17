@@ -23,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'avatar',
     ];
 
     /**
@@ -47,6 +48,22 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * @var array<string>
+     */
+    protected $appends = [
+        'avatar_url',
+    ];
+    public function getAvatarUrlAttribute()
+    {
+        if (!$this->avatar) return null;
+
+        return config('filesystems.disks.s3.url') . '/' .
+            (config('filesystems.disks.s3.folder_path') ? config('filesystems.disks.s3.folder_path') . '/' : '') .
+            ltrim($this->avatar, '/');
+    }
+
     public function sentFollowRequests()
     {
         return $this->hasMany(FollowRequest::class, 'sender_id');

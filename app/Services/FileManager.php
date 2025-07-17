@@ -28,8 +28,8 @@ class FileManager
         $extension = $file->getClientOriginalExtension() ?: 'doc';
 
         $fileName = $isUpdateFileName ? time() . rand(10000, 99999) . '.' . $extension : $fileKey . '.' . $extension;
-        $projectPath = config('filesystems.disks.' . config('filesystems.default') . '.folder_path') . '/' . $path;
-        \Log::info('File upload path', ['path' => $projectPath]);
+        $projectPath = rtrim(config('filesystems.disks.' . config('filesystems.default') . '.folder_path'), '/') . '/' . trim($path, '/');
+
         $storageDisk = config('filesystems.default');
         $visibility = $isPrivate ? null : 'public';
 
@@ -40,14 +40,6 @@ class FileManager
         } else {
             Storage::disk($storageDisk)->put("{$projectPath}/{$fileName}", file_get_contents($file), $visibility);
         }
-
-        // Create thumbnail
-        // if ($isThumb) {
-        //     $thumbHeight = $height ?: 150;
-        //     $thumbWidth = $width ?: 150;
-        //     $thumb = Image::make($file)->resize($thumbHeight, $thumbWidth)->encode($extension);
-        //     Storage::disk($storageDisk)->put("{$projectPath}/thumb/{$fileName}", (string) $thumb, $visibility);
-        // }
 
         return "{$path}/{$fileName}";
     }

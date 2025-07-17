@@ -55,23 +55,30 @@ class AuthController extends Controller
     {
         $request->validate([
             'password' => 'required|string|min:6',
-            'photo' => 'nullable|image|max:2048', // optional image
+            'photo' => 'max:2048',
         ]);
 
         $user = Auth::user();
         $user->password = bcrypt($request->password);
 
         if ($request->hasFile('photo')) {
-            // Upload to S3 using FileManager
-            $relativePath = FileManager::upload($request, 'profile-photos', 'photo');
+            // Replace #user_id# in path
+            $path = str_replace('#user_id#', $user->id, config('constants.s3.base_folder')) . '/profile-photos';
+
+            // Upload using FileManager
+            $relativePath = FileManager::upload($request, $path, 'photo');
             \Log::info('Uploaded profile photo', ['path' => $relativePath]);
-            $user->avatar = FileManager::getUrl($relativePath); // full URL
+
+            // Just save the relative path (no full URL)
+            $user->avatar = $relativePath;
         }
 
         $user->save();
 
         return response()->json(['message' => 'Profile updated successfully']);
     }
+
+
 
 
     public function redirectToGoogle()
