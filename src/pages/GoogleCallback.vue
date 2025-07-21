@@ -14,6 +14,7 @@ onMounted(() => {
     name: route.query.name,
     email: route.query.email,
     avatar: route.query.avatar,
+    avatar_url: route.query.avatar_url,
     id: route.query.id ? parseInt(route.query.id) : null,
   }
   const passwordSet = route.query.password_set === 'true' || route.query.password_set === '1'

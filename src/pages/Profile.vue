@@ -3,9 +3,18 @@
     <div class="profile-card">
       <div v-if="auth.user" class="profile-content">
         <h1 class="profile-title">Welcome, {{ auth.user.name }}</h1>
-        <img :src="auth.user.avatar.includes('google') ? auth.user.avatar : auth.user.avatar_url" alt="avatar"
-          class="profile-avatar" />
+        <img :src="auth.user.avatar_url || auth.user.avatar" alt="avatar" class="profile-avatar" />
+        <button class="profile-button" @click="triggerFileInput">Edit Avatar</button>
+        <input type="file" ref="fileInput" @change="uploadPhoto" style="display: none" />
         <p class="profile-email">{{ auth.user.email }}</p>
+        <button class="profile-button" @click="showPasswordModal = true">Change Password</button>
+
+        <div v-if="showPasswordModal" class="modal">
+          <input v-model="newPassword" type="password" placeholder="New Password" />
+          <input v-model="confirmPassword" type="password" placeholder="Confirm Password" />
+          <button @click="updatePassword">Update Password</button>
+          <button @click="showPasswordModal = false">Cancel</button>
+        </div>
       </div>
       <div v-else class="profile-content">
         <p class="profile-message">Not logged in</p>
@@ -17,7 +26,43 @@
 
 <script setup>
 import { useAuthStore } from '@stores/auth'
+import { ref } from 'vue'
+import axios from 'axios'
+
 const auth = useAuthStore()
+const fileInput = ref(null)
+const newPassword = ref('')
+const confirmPassword = ref('')
+const showPasswordModal = ref(false)
+
+function triggerFileInput() {
+  fileInput.value.click()
+}
+
+async function uploadPhoto(e) {
+  const formData = new FormData()
+  formData.append('photo', e.target.files[0])
+  try {
+    const response = await axios.post('update-avatar', formData)
+    await auth.setAuth(response.data.user, auth.token) // update user while keeping existing token
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+async function updatePassword() {
+  if (newPassword.value !== confirmPassword.value) return alert('Passwords do not match')
+  try {
+    await axios.post('update-password', {
+      password: newPassword.value,
+      password_confirmation: confirmPassword.value,
+    })
+    alert('Password updated successfully')
+    showPasswordModal.value = false
+  } catch (err) {
+    console.error(err)
+  }
+}
 </script>
 
 <style scoped>
@@ -91,10 +136,31 @@ const auth = useAuthStore()
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s;
+  margin: 5px;
 }
 
 .profile-button:hover {
   background-color: #cc0000;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 
 @media (max-width: 480px) {
