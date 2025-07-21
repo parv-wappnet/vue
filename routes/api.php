@@ -32,6 +32,9 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
     Route::post('/set-profile', [AuthController::class, 'setProfile']);
+    Route::post('/update-password', [AuthController::class, 'updatePassword']);
+    Route::post('/update-avatar', [AuthController::class, 'updateAvatar']);
+
 
     // Follow Routes
     Route::prefix('follow')->group(function () {

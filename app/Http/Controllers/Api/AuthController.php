@@ -78,6 +78,35 @@ class AuthController extends Controller
         return response()->json(['message' => 'Profile updated successfully']);
     }
 
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'photo' => 'required|image|max:2048',
+        ]);
+
+        $user = Auth::user();
+        $path = str_replace('#user_id#', $user->id, config('constants.s3.base_folder')) . '/profile-photos';
+        $relativePath = FileManager::upload($request, $path, 'photo');
+        \Log::info('Updated profile photo', ['path' => $relativePath]);
+
+        $user->avatar = $relativePath;
+        $user->save();
+
+        return response()->json(['message' => 'Avatar updated successfully', 'user' => $user]);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = Auth::user();
+        $user->password = bcrypt($request->password);
+        $user->save();
+
+        return response()->json(['message' => 'Password updated successfully']);
+    }
 
 
 
@@ -100,7 +129,9 @@ class AuthController extends Controller
             [
                 'name' => $googleUser->getName(),
                 'google_id' => $googleUser->getId(),
-                'avatar' => $googleUser->getAvatar(),
+                'avatar' => User::where('email', $googleUser->getEmail())->exists()
+                    ? User::where('email', $googleUser->getEmail())->first()->avatar
+                    : $googleUser->getAvatar(),
             ]
         );
 
@@ -113,6 +144,7 @@ class AuthController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'avatar' => $user->avatar,
+            'avatar_url' => $user->avatar_url,
             'id' => $user->id,
             'password_set' => !empty($user->password)
         ]);

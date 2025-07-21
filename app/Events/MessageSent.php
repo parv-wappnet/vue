@@ -19,6 +19,7 @@ class MessageSent implements ShouldBroadcast
 
     public function __construct(Message $message)
     {
+        \Log::info('MessageSent event triggered for message ID: ' . $message->id);
         $this->message = $message->load('sender');
     }
 
