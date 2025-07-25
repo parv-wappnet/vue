@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [vue()],
   server: {
     port: 5174,
-    host: true,
+    host: '0.0.0.0',
     allowedHosts: 'all', // ⚠️ allow all external hosts
   },
   build: {

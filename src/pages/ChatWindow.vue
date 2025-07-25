@@ -1,7 +1,10 @@
 <template>
     <div class="chat-container">
         <div class="chat-card">
-            <h3 class="chat-title">Conversation: {{ conversationName }}</h3>
+            <h3 class="chat-title">
+                Conversation: {{ conversationName }}
+                <button @click="openCallModal" class="call-button">📞 Call</button>
+            </h3>
             <div ref="chatContainer" @scroll="handleScroll" class="chat-messages">
                 <template v-for="(message, index) in messages" :key="message.id">
                     <!-- Date divider BEFORE first message of a day -->
@@ -14,6 +17,7 @@
             </div>
             <ChatInputBox @send="sendMessage" />
         </div>
+        <CallModal :visible="showCall" :conversationId="conversationId" :recipientId="4" :onClose="closeCallModal" />
     </div>
 </template>
 
@@ -25,6 +29,15 @@ import { useAuthStore } from '@stores/auth'
 import { createEcho } from '@services/echo'
 import ChatInputBox from '@chat/ChatInputBox.vue'
 import ChatMessageItem from '@chat/ChatMessageItem.vue'
+import CallModal from '@components/call/CallModal.vue'
+
+const showCall = ref(false)
+const openCallModal = () => {
+    showCall.value = true
+}
+const closeCallModal = () => {
+    showCall.value = false
+}
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -107,6 +120,7 @@ const loadMessages = async () => {
         messages.value.push(...newMessages)
 
         conversationName.value = res.data.name || 'Private Chat'
+        console.log(res.data);
         offset.value += limit
     } catch (err) {
         console.error('❌ Failed to load messages:', err)

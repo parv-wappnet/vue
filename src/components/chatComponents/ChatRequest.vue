@@ -4,7 +4,7 @@
     <UserSearch @user-found="handleUserFound" />
     <!-- Follow Request UI -->
     <div v-if="user" class="mt-4 p-4 border rounded shadow bg-white request-card">
-      <img v-if="user.avatar" :src="user.avatar" class="w-12 h-12 rounded-full mb-2" alt="Avatar" />
+      <img v-if="user.avatar" :src="user.avatar_url" class="w-12 h-12 rounded-full mb-2" alt="Avatar" />
       <p class="font-semibold text-lg">{{ user.name }} ({{ user.email }})</p>
       <button @click="sendFollowRequest"
         class="mt-2 px-4 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition">

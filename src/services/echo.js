@@ -5,7 +5,7 @@ import Pusher from 'pusher-js'
 // This enables Pusher's debug logging to browser console
 // Useful during development to see Pusher connection details and events
 // Should be set to false in production
-Pusher.logToConsole = true
+Pusher.logToConsole = false
 export const createEcho = (token) => new Echo({
     broadcaster: 'pusher',
     key: import.meta.env.VITE_PUSHER_APP_KEY,
