@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CallController;
 use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\GroupController;
 use App\Http\Controllers\Api\MessageController;
@@ -54,4 +55,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Group Routes
     Route::apiResource('groups', GroupController::class)->only(['index', 'store', 'show']);
     Route::post('groups/{id}/members', [GroupController::class, 'addMembers']);
+
+    Route::post('/call/initiate', [CallController::class, 'initiate']);
+    Route::post('/call/answer', [CallController::class, 'answer']);
+    Route::post('/call/reject', [CallController::class, 'reject']);
+    Route::post('/call/ice-candidate', [CallController::class, 'iceCandidate']);
 });

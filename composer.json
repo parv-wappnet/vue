@@ -68,16 +68,23 @@
         ],
         "clear": [
             "@php artisan optimize:clear --ansi",
+            "@php artisan view:clear --ansi",
+            "@php artisan cache:clear --ansi",
+            "@php artisan config:clear --ansi",
+            "@php artisan route:clear --ansi",
+            "@php artisan event:clear --ansi",
+            "composer dump-autoload",
             "@php artisan config:cache --ansi",
             "@php artisan route:cache --ansi",
-            "@php artisan view:clear --ansi",
-            "@php artisan view:cache --ansi",
-            "@php artisan cache:clear --ansi",
-            "@php artisan event:clear --ansi"
+            "@php artisan view:cache --ansi"
         ],
         "chat": [
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd\" \"php artisan serve --port=8003\" \"php artisan queue:listen\" --names=server,queue"
+        ],
+        "dev": [
+            "Composer\\Config::disableProcessTimeout",
+            "npx concurrently -c \"#93c5fd,#c4b5fd\" \"php artisan serve --host=192.168.29.50 --port=8003\" \"php artisan queue:listen\" --names=server,queue"
         ]
     },
     "extra": {
